@@ -1,34 +1,6 @@
-var songItem = `<div class="song-list-item">
-                  <div class="thumbnail"></div>
-                  <div class="song-info">
-                    <div class="song-name">
-                      <h3>%TITLE%</h3>
-                      <p>%ARTIST%</p>
-                    </div>
-                    <div class="song-duration">
-                      <button class="cursorup">
-                        <svg width="32px" height="32px" viewBox="0 0 490 490" xmlns="http://www.w3.org/2000/svg">
-                          <use xlink:href="#upsvg"></use>
-                        </svg>
-                      </button>
-                      <button class="cursordown">
-                        <svg width="32px" height="32px" viewBox="0 0 490 490" xmlns="http://www.w3.org/2000/svg">
-                          <use xlink:href="#downsvg"></use>
-                        </svg>
-                      </button>
-                      <button class="cursordel">
-                        <svg width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 30 30">
-                          <use xlink:href="#deletesvg"></use>
-                        </svg>
-                      </button>
-                      <span>2:52</span>
-                    </div>
-                  </div>
-                </div>`
-
 function renderItem(title,artist,id) {
   return `<div class="song-list-item">
-                  <img src='https://i3.ytimg.com/vi/${id}/maxresdefault.jpg' class="thumbnail">
+                  <img src='https://i3.ytimg.com/vi/${id}/mqdefault.jpg' class="thumbnail">
                   <div class="song-info">
                     <div class="song-name">
                       <h3>${title}</h3>
@@ -116,9 +88,9 @@ const getPlayListItems = async playlistID => {
 getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
   .then(data => {
     data.forEach(item => {
-      // item.items.forEach(i => listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId, airtist: i.snippet.channelTitle }));
+      item.items.forEach(i => console.log(i.snippet));
       item.items.forEach(i => listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId, airtist: i.snippet.channelTitle }));
-      
+      // 
       item.items.forEach(i => $('.song-list').append(renderItem(i.snippet.title, i.snippet.channelTitle, i.snippet.resourceId.videoId)))
     });
 
