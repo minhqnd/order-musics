@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Music App</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> -->
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
@@ -65,7 +65,7 @@
           <div class="now-playing">
             <h2>Đang phát</h2>
             <div class="album-cover">
-              <div class="waves">
+              <div class="waves hide">
                 <span class="wave"></span>
                 <span class="wave"></span>
                 <span class="wave"></span>
@@ -74,7 +74,7 @@
                 <span class="wave"></span>
                 <span class="wave"></span>
               </div>
-              <img class="img-responsive"
+              <img class="img-responsive" id="album-cover-image"
                 src="https://i.pinimg.com/736x/a8/dd/f0/a8ddf0248f382072d94aff24097388ce--cool-music-new-music.jpg" />
               <div class="overlay"></div>
             </div>
@@ -178,10 +178,8 @@
                     </div>
                   </div>
                 </div>
-
-
                 <div class="song-list-item">
-                  <div class="thumbnail"></div>
+                  <img class="thumbnail" src="https://i.pinimg.com/736x/a8/dd/f0/a8ddf0248f382072d94aff24097388ce--cool-music-new-music.jpg"></img>
                   <div class="song-info">
                     <div class="song-name">
                       <h3>Sidewalks</h3>
@@ -207,20 +205,19 @@
                     </div>
                   </div>
                 </div>
-
-
               </div>
             </div>
           </div>
         </div>
       </main>
       <div class="music-player">
-        <div class="current-playing-time"></div>
+        <!-- <div class="current-playing-time"></div> -->
+        <input type="range" min="1" max="1000" value="1" class="current-playing-time"></input>
 
         <div class="current-playing-song-controls">
           <div class="song-name">
-            <h4>The Weeknd - False Alarm (Audio)</h4>
-            <p><strong>The Weeknd</strong></p>
+            <h4 id='song-title'>The Weeknd - False Alarm (Audio)</h4>
+            <p><strong id='song-artist'>The Weeknd</strong></p>
           </div>
 
           <div class="controls">
@@ -229,32 +226,32 @@
                 <use xlink:href="#shuffle"></use>
               </svg>
             </button>
-            <button>
+            <button class="prev-button" onclick="prevSong()">
               <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 16 16">
                 <path fill="#fff" d="M14 15V1L4 8zM2 1h2v14H2V1z" />
               </svg>
             </button>
-            <button class="play-button">
-              <svg data-v-0971d7ee="" width="16" height="20" viewBox="0 0 42 40" xmlns="http://www.w3.org/2000/svg">
-                <use xlink:href="#playbutton"></use>
+            <button class="play-button" onclick="changeStatusPlay()">
+              <svg fill="#fff" width="20" height="20" viewBox="60 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <use id="iconPlay" xlink:href="#playbutton"></use>
               </svg>
             </button>
-            <button>
+            <button class="next-button" onclick="nextSong()">
               <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 16 16">
                 <path fill="#fff" d="M2 1v14l10-7zM12 1h2v14h-2V1z" />
               </svg>
             </button>
-            <button>
+            <button class="loop-button" onclick="repeatVideo()">
               <svg xmlns="http://www.w3.org/2000/svg" class="svg-icon" width="20" height="20" viewBox="0 0 1024 1024">
                 <use xlink:href="#loop"></use>
               </svg>
             </button>
           </div>
           <div class="volume-controls">
-            <svg data-v-0971d7ee="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-              <use xlink:href="#shuffle"></use>
+            <svg class="volumeButton" data-v-0971d7ee="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+              <use xlink:href="#volume"></use>
             </svg>
-            <div class="volume"></div>
+            <input type="range" min="1" max="100" value="100"  class="volume"></input>
           </div>
         </div>
       </div>
@@ -263,9 +260,8 @@
   <div style="display:none ">
     <svg class="svg-assets" xmlns="http://www.w3.org/2000/svg">
       <symbol id="playbutton">
-        <polygon data-v-0971d7ee="" fill="#fff" points="0,0,0,40,18.032,29.982,17.971,9.984"></polygon>
-        <polygon data-v-0971d7ee="" fill="#fff" points="18.032,29.982,35.823,20.099,36,20,17.971,9.984">
-        </polygon>
+        <path
+          d="M133,440a35.37,35.37,0,0,1-17.5-4.67c-12-6.8-19.46-20-19.46-34.33V111c0-14.37,7.46-27.53,19.46-34.33a35.13,35.13,0,0,1,35.77.45L399.12,225.48a36,36,0,0,1,0,61L151.23,434.88A35.5,35.5,0,0,1,133,440Z" />
       </symbol>
       <symbol id="shuffle">
         <path data-v-74fd3200="" fill="#fff"
@@ -308,8 +304,19 @@
         <path
           d="M8 20.022c-.553 0-1-.447-1-1v-10c0-.553.447-1 1-1s1 .447 1 1v10c0 .553-.447 1-1 1zm8 0c-.553 0-1-.447-1-1v-10c0-.553.447-1 1-1s1 .447 1 1v10c0 .553-.447 1-1 1zm-4 0c-.553 0-1-.447-1-1v-10c0-.553.447-1 1-1s1 .447 1 1v10c0 .553-.447 1-1 1z" />
       </symbol>
+      <symbol id="pausebutton">
+        <path d="M208,432H160a16,16,0,0,1-16-16V96a16,16,0,0,1,16-16h48a16,16,0,0,1,16,16V416A16,16,0,0,1,208,432Z" />
+        <path d="M352,432H304a16,16,0,0,1-16-16V96a16,16,0,0,1,16-16h48a16,16,0,0,1,16,16V416A16,16,0,0,1,352,432Z" />
+      </symbol>
     </svg>
   </div>
+  <!-- <div data-video="U0Vr1zotKIo" data-autoplay="0" data-loop="1" id="youtube-audio"></div> -->
+  <!-- <audio id="youtube" ></audio> -->
+  <div display="none" id="player"></div>
 </body>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
+<!-- <script src="https://cdn.rawgit.com/labnol/files/master/yt.js"></script> -->
+<script src="./axios.min.js"></script>
+<script src="./panel.js"></script>
 </html>

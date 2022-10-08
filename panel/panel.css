@@ -16,8 +16,8 @@ body {
 }
 
 .music-player-container {
-  position: relative;
-  height: 100%;
+  position: absolute;
+    height: 100vh;
   width: 100%;
   /* margin: 80px auto; */
 }
@@ -138,7 +138,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 100px;
+  height: 10%;
   padding: 0 30px;
 }
 
@@ -279,7 +279,7 @@ a {
 .music-player-container .music-player-content main .music-player-main .current-select-category-container {
   position: relative;
   padding: 0 30px 30px;
-  /* height: 100%; */
+  height: 90%;
   display: flex;
   flex-grow: 1;
 }
@@ -528,7 +528,7 @@ a {
 }
 
 .cursorup {
-    cursor: n-resize;
+  cursor: n-resize;
 }
 
 .cursordown {
@@ -554,8 +554,8 @@ a {
 }
 
 .music-player-container .music-player-content main .music-player-main .current-select-category-container .current-select-category-content .song-list .song-list-item .thumbnail {
-  background-image: url("https://www.whosampled.com/static/images/blog/2016/09/740/avatar_1001862_1475123915.jpg");
   background-repeat: no-repeat;
+  object-fit: cover;
   background-position: center center;
   background-size: cover;
   width: 50px;
@@ -615,13 +615,20 @@ a {
 }
 
 .music-player-container .music-player-content .music-player .current-playing-time {
-  position: relative;
+  position: absolute;
+  transform: scaleY(-5px);
   height: 5px;
   width: 100%;
   background-color: #8c8d94;
+  margin-left: 10px;
+  background: linear-gradient(to right, #ff2152 0%, #ff2152 0%, #fff 0%, #fff 100%);
+  border-radius: 8px;
+  outline: none;
+  transition: background 450ms ease-in;
+  -webkit-appearance: none;
 }
 
-.music-player-container .music-player-content .music-player .current-playing-time::before {
+/* .music-player-container .music-player-content .music-player .current-playing-time::before {
   content: "";
   position: absolute;
   left: 0;
@@ -630,9 +637,9 @@ a {
   width: 40%;
   border-radius: 2px;
   background-color: #ff2152;
-}
+} */
 
-.music-player-container .music-player-content .music-player .current-playing-time::after {
+/* .music-player-container .music-player-content .music-player .current-playing-time::after {
   content: "";
   position: absolute;
   left: 40%;
@@ -641,7 +648,7 @@ a {
   height: 15px;
   background-color: #fff;
   border-radius: 50%;
-}
+} */
 
 .music-player-container .music-player-content .music-player .current-playing-song-controls {
   display: flex;
@@ -704,35 +711,39 @@ a {
 }
 
 .music-player-container .music-player-content .music-player .volume-controls .volume {
-  position: relative;
-  height: 5px;
   width: 120px;
-  background-color: #8c8d94;
-  border-radius: 5px;
   margin-left: 10px;
+  background: linear-gradient(to right, #ff2152 0%, #ff2152 100%, #fff 100%, #fff 100%);
+  border-radius: 8px;
+  height: 7px;
+  /* outline: none; */
+  transition: background 450ms ease-in;
+  -webkit-appearance: none;
 }
 
-.music-player-container .music-player-content .music-player .volume-controls .volume::before {
-  content: "";
-  position: absolute;
-  left: 40%;
+
+/* .music-player-container .music-player-content .music-player .volume-controls .volume::before { */
+/* content: ""; */
+/* position: absolute; */
+/* left: 40%;
   top: -5px;
   width: 15px;
-  height: 15px;
-  background-color: #fff;
-  border-radius: 50%;
-}
+  height: 15px; */
+/* background-color: #fff; */
+/* border-radius: 50%; */
+/* } */
 
-.music-player-container .music-player-content .music-player .volume-controls .volume::after {
-  content: "";
-  position: absolute;
-  left: 0;
+/* .music-player-container .music-player-content .music-player .volume-controls .volume::after { */
+/* content: ""; */
+/* position: absolute; */
+/* left: 0;
   top: 0;
   height: 100%;
   width: 40%;
-  border-radius: 2px;
-  background-color: #ff2152;
-}
+  overflow: hidden;
+  border-radius: 2px; */
+/* background-color: #ff2152; */
+/* } */
 
 /* General styles and animations */
 button {
@@ -742,8 +753,9 @@ button {
 }
 
 .img-responsive {
-  max-width: 100%;
-  width: 100%;
+  max-width: 190px;
+  width: 190px;
+  height: 190px;
   -o-object-fit: cover;
   object-fit: cover;
 }
@@ -820,6 +832,11 @@ button {
   height: 70px;
   display: flex;
   align-items: center;
+}
+
+.hide {
+  opacity: 0;
+  transition: all 0.2s linear;
 }
 
 .waves .wave {
