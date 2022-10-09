@@ -239,8 +239,19 @@ $('.current-playing-time').change(function () {
   player.seekTo(valueChange)
 });
 
+//! cách này hơi ngu nhưng phải dùng vì nếu dùng youtube API thì ngốn quota vcl =)), search 100 bài hết mẹ quota của ngày
+function getIdVideoBySearch(query) {
+$.getJSON('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.youtube.com/results?search_query=' + query), function (data) {
+  var index = data.contents.toString()
+  var indexIndexOf = index.indexOf('/watch?v=') + 9
+  var result = index.slice(indexIndexOf, indexIndexOf + 11)
+  addVideoBySearch(result)
+  });
+}
 
-
+function addVideoBySearch(id) {
+  console.log(id)  
+}
 
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
@@ -267,7 +278,7 @@ function onYouTubeIframeAPIReady() {
   });
 
   $('#song-title').text(listVid[rand].title);
-  $('#song-artist').text(listVid[rand].airtist)
+  $('#song-artist').text(listVid[rand].artist)
   $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${listVid[rand].idVid}/maxresdefault.jpg`);
   // console.log(listVid[rand].idVid)
 
@@ -477,7 +488,8 @@ function changePlaylistId() {
 //* AUTO complete
 
 function renderSuggest(item) {
-  return `<div class="suggestItem"><strong></strong>${item}<input type="hidden" value="${item}"></div>`
+  $('#search').val().length
+  return `<div class="suggestItem"><strong>${item.slice(0, $('#search').val().length)}</strong>${item.slice($('#search').val().length)}<input type="hidden" value="${item}"></div>`
 }
 
 
@@ -485,14 +497,13 @@ function renderSuggest(item) {
 //   getSearchSuggest(this.val)
 // });
 
-$('#search').keyup(function (e) {
+$('#search').on('input', function (e) {
   $('#search').val() ? getSearchSuggest($('#search').val()) : $('.suggestItem').remove()
-  
+
 });
 
 function getListSuggest(data) {
   var ListSuggest = JSON.parse(data)[1]
-  console.log(ListSuggest)
   autocomplete(document.getElementById("search"), ListSuggest);
 }
 
@@ -501,88 +512,35 @@ function autocomplete(inp, arr) {
   arr.forEach(item => {
     $('#autocomplete-list').append(renderSuggest(item))
   })
-  /*the autocomplete function takes two arguments,
-  the text field element and an array of possible autocompleted values:*/
   var currentFocus;
-  /*execute a function when someone writes in the text field:*/
+  currentFocus = -1;
 
-  // inp.addEventListener("input", function (e) {
-  //   var a, b, i, val = this.value;
-  //   /*close any already open lists of autocompleted values*/
-  //   closeAllLists();
-  //   // if (!val) { return false; }
-  //   currentFocus = -1;
-  //   /*create a DIV element that will contain the items (values):*/
-  //   a = document.createElement("DIV");
-  //   a.setAttribute("id", this.id + "autocomplete-list");
-  //   a.setAttribute("class", "autocomplete-items");
-  //   /*append the DIV element as a child of the autocomplete container:*/
-  //   this.parentNode.appendChild(a);
-  //   /*for each item in the array...*/
-  //   for (i = 0; i < arr.length; i++) {
-  //     /*check if the item starts with the same letters as the text field value:*/
-  //     // if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-  //       /*create a DIV element for each matching element:*/
-  //       b = document.createElement("DIV");
-  //       /*make the matching letters bold:*/
-  //       b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-  //       b.innerHTML += arr[i].substr(val.length);
-  //       /*insert a input field that will hold the current array item's value:*/
-  //       b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-  //       /*execute a function when someone clicks on the item value (DIV element):*/
-  //       b.addEventListener("click", function (e) {
-  //         /*insert the value for the autocomplete text field:*/
-  //         inp.value = this.getElementsByTagName("input")[0].value;
-  //         /*close the list of autocompleted values,
-  //         or any other open lists of autocompleted values:*/
-  //         closeAllLists();
-  //       });
-  //       a.appendChild(b);
-  //     // }
-  //   }
-  // });
-  /*execute a function presses a key on the keyboard:*/
   inp.addEventListener("keydown", function (e) {
-    var x = document.getElementById(this.id + "autocomplete-list");
-    if (x) x = x.getElementsByTagName("div");
-    // console.log(x)
     if (e.keyCode == 40) {
-      /*If the arrow DOWN key is pressed,
-      increase the currentFocus variable:*/
       currentFocus++;
-      /*and and make the current item more visible:*/
-      addActive(x);
-    } else if (e.keyCode == 38) { //up
-      /*If the arrow UP key is pressed,
-      decrease the currentFocus variable:*/
+      addActive(currentFocus);
+    } else if (e.keyCode == 38) {
       currentFocus--;
-      /*and and make the current item more visible:*/
-      addActive(x);
-    } else if (e.keyCode == 13) {
-      /*If the ENTER key is pressed, prevent the form from being submitted,*/
-      e.preventDefault();
-      if (currentFocus > -1) {
-        /*and simulate a click on the "active" item:*/
-        if (x) x[currentFocus].click();
-      }
+      addActive(currentFocus);
     }
   });
+
+  $(".suggestItem").click(function () {
+    $('#search').val($(this).text())
+    $('#search').focus()
+    currentFocus = -1
+  });
+
   function addActive(x) {
-    /*a function to classify an item as "active":*/
-    if (!x) return false;
-    /*start by removing the "active" class on all items:*/
-    removeActive(x);
-    if (currentFocus >= x.length) currentFocus = 0;
-    if (currentFocus < 0) currentFocus = (x.length - 1);
-    /*add class "autocomplete-active":*/
-    x[currentFocus].classList.add("autocomplete-active");
+    removeActive()
+    $('#search').val($(".suggestItem").eq(x).text())
+    $(".suggestItem").eq(x).addClass('autocomplete-active');
   }
+
   function removeActive(x) {
-    /*a function to remove the "active" class from all autocomplete items:*/
-    for (var i = 0; i < x.length; i++) {
-      x[i].classList.remove("autocomplete-active");
-    }
+    $(".suggestItem").removeClass('autocomplete-active');
   }
+
   /*execute a function when someone clicks in the document:*/
   document.addEventListener("click", function (e) {
     $('.suggestItem').remove()

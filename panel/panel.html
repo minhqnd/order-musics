@@ -83,7 +83,7 @@
         <div class="music-player-main">
           <div class="music-player-header">
             <div class="search-form-container">
-              <form role="search" id="form">
+              <form role="search" id="form" action="javascript:getIdVideoBySearch($('#search').val())">
                 <div class="autocomplete" style="width:100%;">
                 <input type="search" id="search" name="q" placeholder="Tìm kiếm..." autocomplete="off" />
                 <div id="autocomplete-list" class="autocomplete-items"></div>
