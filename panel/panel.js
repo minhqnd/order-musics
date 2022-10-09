@@ -575,7 +575,15 @@ function rand_from_seed(x, iterations) {
   return x;
 }
 
-$('.pin').text(rand_from_seed(~~((new Date) / 86400000)))
+function getDDMM() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  let mm = today.getMonth() + 1; // Months start at 0!
+  let dd = today.getDate();
+  return dd*100+mm
+}
+
+$('.pin').text(rand_from_seed(getDDMM()))
 
 
 
