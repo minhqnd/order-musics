@@ -1,4 +1,4 @@
-function renderItem(title,artist,id) {
+function renderItem(title, artist, id, duration) {
   return `<div class="song-list-item">
                   <img src='https://i3.ytimg.com/vi/${id}/mqdefault.jpg' class="thumbnail">
                   <div class="song-info">
@@ -22,7 +22,7 @@ function renderItem(title,artist,id) {
                           <use xlink:href="#deletesvg"></use>
                         </svg>
                       </button>
-                      <span>2:52</span>
+                      <span>${duration}</span>
                     </div>
                   </div>
                 </div>`
@@ -84,14 +84,58 @@ const getPlayListItems = async playlistID => {
   return resultArr;
 };
 
+
+const getVideosItems = async ID => {
+  var token;
+  var resultArr = [];
+  const result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
+    params: {
+      part: 'id,contentDetails',
+      id: ID,
+      key: apiKey
+    }
+  })
+  token = result.data.nextPageToken;
+  resultArr.push(result.data);
+  while (token) {
+    let result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
+      params: {
+        part: 'id,contentDetails',
+        id: ID,
+        key: apiKey,
+        pageToken: token
+      }
+    })
+    token = result.data.nextPageToken;
+    resultArr.push(result.data);
+  }
+  return resultArr;
+};
+
+
+
 //Get Title video and videoId
 getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
   .then(data => {
     data.forEach(item => {
-      item.items.forEach(i => console.log(i.snippet));
-      item.items.forEach(i => listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId, airtist: i.snippet.channelTitle }));
-      // 
-      item.items.forEach(i => $('.song-list').append(renderItem(i.snippet.title, i.snippet.channelTitle, i.snippet.resourceId.videoId)))
+      // item.items.forEach(i => console.log(i.snippet));
+      item.items.forEach(i => listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId, artist: i.snippet.channelTitle }));
+      var list = item.items.map(a => (a.snippet.resourceId.videoId))
+
+      getVideosItems(list.toString()).then(data => {
+        data.forEach(item => {
+          item.items.forEach((i,index) => {
+            listVid[index].duration = YTDurationToSeconds(i.contentDetails.duration)
+          })
+        })
+        console.log(listVid)  
+        listVid.forEach(i => $('.song-list').append(renderItem(i.title, i.artist, i.idVid, i.duration)))
+      }).catch(err => {
+          console.log(err)
+        });
+
+
+      // item.items.forEach(i => $('.song-list').append(renderItem(i.snippet.title, i.snippet.channelTitle, i.snippet.resourceId.videoId)))
     });
 
     //create random index
@@ -102,11 +146,38 @@ getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   })
   .catch(err => {
+    console.log(err)
     changeAPIKey(apiKeyList[1], err);
   });
 
 
+var listDuration = []
+
+
+
+function YTDurationToSeconds(duration) {
+  var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+
+  match = match.slice(1).map(function (x) {
+    if (x != null) {
+      return x.replace(/\D/, '');
+    }
+  });
+
+  var hours = (parseInt(match[0]) || 0);
+  var minutes = (parseInt(match[1]) || 0);
+  var seconds = (parseInt(match[2]) || 0);
+
+  // return hours * 3600 + minutes * 60 + seconds;
+  if (hours == 0) {
+    return `${minutes}:${seconds}`;
+  } else {
+    return `${hours}:${minutes}:${seconds}`;
+  }
+}
+
 function changeAPIKey(newKey, err) {
+  console.log(err.response)
   if (err.response.data.error.errors[0].reason == "dailyLimitExceeded") {
     apiKey = newKey;
     getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
