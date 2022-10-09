@@ -90,7 +90,7 @@ const getVideosItems = async ID => {
   var resultArr = [];
   const result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
     params: {
-      part: 'id,contentDetails',
+      part: 'id,contentDetails,snippet',
       id: ID,
       key: apiKey
     }
@@ -100,7 +100,7 @@ const getVideosItems = async ID => {
   while (token) {
     let result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
       params: {
-        part: 'id,contentDetails',
+        part: 'id,contentDetails,snippet',
         id: ID,
         key: apiKey,
         pageToken: token
@@ -111,6 +111,8 @@ const getVideosItems = async ID => {
   }
   return resultArr;
 };
+
+
 
 
 
@@ -127,7 +129,7 @@ getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
             listVid[index].duration = YTDurationToSeconds(i.contentDetails.duration)
           })
         })
-        listVid.forEach(i => $('.song-list').append(renderItem(i.title, i.artist, i.idVid, i.duration)))
+        listVid.forEach(i => $('.song-list-default').append(renderItem(i.title, i.artist, i.idVid, i.duration)))
       }).catch(err => {
         console.log(err)
       });
@@ -135,6 +137,7 @@ getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
 
     // * create random index
     rand = Math.floor(Math.random() * listVid.length);
+
     checkPrivate();
     tag.src = "https://www.youtube.com/iframe_api";
     var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -196,7 +199,7 @@ function changeAPIKey(newKey, err) {
 
 
 
-//! Cái này chiếm quota vcl, request ít thôi
+//*get suggest youtube
 function getSearchSuggest(input) {
   $.getJSON('https://api.allorigins.win/get?url=' + encodeURIComponent('http://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=' + input), function (data) {
     // var result = data.contents;
@@ -241,16 +244,33 @@ $('.current-playing-time').change(function () {
 
 //! cách này hơi ngu nhưng phải dùng vì nếu dùng youtube API thì ngốn quota vcl =)), search 100 bài hết mẹ quota của ngày
 function getIdVideoBySearch(query) {
-$.getJSON('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.youtube.com/results?search_query=' + query), function (data) {
-  var index = data.contents.toString()
-  var indexIndexOf = index.indexOf('/watch?v=') + 9
-  var result = index.slice(indexIndexOf, indexIndexOf + 11)
-  addVideoBySearch(result)
+  $.getJSON('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.youtube.com/results?search_query=' + query), function (data) {
+    var index = data.contents.toString()
+    var indexIndexOf = index.indexOf('/watch?v=') + 9
+    var result = index.slice(indexIndexOf, indexIndexOf + 11)
+    addVideoBySearch(result)
   });
 }
 
+// { title: "MONO - 'Quên Anh Đi' (Exclusive Performance Video)", idVid: "wwPYl5YizXg", artist: "Mono Official", duration: "04:13" }
 function addVideoBySearch(id) {
-  console.log(id)  
+  console.log(id)
+  playMusicById(id)
+  getVideosItems(id).then(data => {
+    data.forEach(item => {
+      console.log(item.items)
+      item.items.forEach((i, index) => {
+        var title = i.snippet.title
+        var artist = i.snippet.channelTitle
+        var duration = YTDurationToSeconds(i.contentDetails.duration)
+
+        $('.song-list-user').prepend(renderItem(title, artist, id, duration))
+      })
+    })
+    $('.song-list-default').hide()
+  }).catch(err => {
+    console.log(err)
+  });
 }
 
 function onYouTubeIframeAPIReady() {
@@ -400,6 +420,11 @@ function nextSong() {
 
 }
 
+
+function playMusicById(id) {
+  player.loadVideoById(id);
+}
+
 // on Song end
 function nextVideo() {
   if (repeatStatus == 1) {
@@ -546,3 +571,14 @@ function autocomplete(inp, arr) {
     $('.suggestItem').remove()
   });
 }
+
+
+//* random key connect
+function rand_from_seed(x, iterations) {
+  iterations = iterations || 100;
+  for (var i = 0; i < iterations; i++)
+    x = (x ^ (x << 1) ^ (x >> 1)) % 10000;
+  return x;
+}
+
+$('.pin').text(rand_from_seed(~~((new Date) / 86400000)))
