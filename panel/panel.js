@@ -51,7 +51,7 @@ var icon2 = document.getElementById('icon2');
 var para = document.getElementById('title');
 
 var rand;
-var repeatStatus = 0;
+var loopStatus = 0;
 
 //Request Playlist Item
 const getPlayListItems = async playlistID => {
@@ -113,10 +113,14 @@ const getVideosItems = async ID => {
 };
 
 
+function showActiveSong() {
+  $('.song-list-item').removeClass('active')
+  $('.song-name:contains(' + listVid[rand].title + ')').parent().parent().addClass('active')
+}
 
 
-
-// * Get Title, id, artist, duration
+// * Get Title, id, artist, duration 
+//! GET DEFAULT PLAYLIST
 getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
   .then(data => {
     data.forEach(item => {
@@ -129,7 +133,10 @@ getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
             listVid[index].duration = YTDurationToSeconds(i.contentDetails.duration)
           })
         })
-        listVid.forEach(i => $('.song-list-default').append(renderItem(i.title, i.artist, i.idVid, i.duration)))
+        listVid.forEach(i => {
+          $('.song-list-default').append(renderItem(i.title, i.artist, i.idVid, i.duration))
+          showActiveSong()
+        })
       }).catch(err => {
         console.log(err)
       });
@@ -202,21 +209,9 @@ function changeAPIKey(newKey, err) {
 //*get suggest youtube
 function getSearchSuggest(input) {
   $.getJSON('https://api.allorigins.win/get?url=' + encodeURIComponent('http://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=' + input), function (data) {
-    // var result = data.contents;
     getListSuggest(data.contents)
-    // console.log(result);
   });
 };
-// function getSearchSuggest(input) {
-//   const result = axios.get(`https://www.googleapis.com/youtube/v3/search`, {
-//     params: {
-//       part: 'snippet',
-//       q: input,
-//       key: 'AIzaSyB56E3cgBh0TMpNi5WQJT9AMFtChFIeEIo'
-//     }
-//   })
-//   return result;
-// };
 
 
 //* setvolume 
@@ -253,6 +248,8 @@ function getIdVideoBySearch(query) {
 }
 
 // { title: "MONO - 'Quên Anh Đi' (Exclusive Performance Video)", idVid: "wwPYl5YizXg", artist: "Mono Official", duration: "04:13" }
+var listVidUser = []
+
 function addVideoBySearch(id) {
   console.log(id)
   playMusicById(id)
@@ -263,15 +260,21 @@ function addVideoBySearch(id) {
         var title = i.snippet.title
         var artist = i.snippet.channelTitle
         var duration = YTDurationToSeconds(i.contentDetails.duration)
+        listVidUser.unshift({ title: title, idVid: id, artist: artist, duration: duration})
+        $('.song-list-user').append(renderItem(title, artist, id, duration))
+        $('#song-title').text(title);
+        $('#song-artist').text(artist)
+        $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
 
-        $('.song-list-user').prepend(renderItem(title, artist, id, duration))
       })
     })
-    $('.song-list-default').hide()
+    $('.song-list-default').css('opacity', '0.2');
   }).catch(err => {
     console.log(err)
   });
 }
+
+
 
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
@@ -296,7 +299,7 @@ function onYouTubeIframeAPIReady() {
 
     }
   });
-
+  
   $('#song-title').text(listVid[rand].title);
   $('#song-artist').text(listVid[rand].artist)
   $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${listVid[rand].idVid}/maxresdefault.jpg`);
@@ -331,7 +334,7 @@ function onPlayerReady(event) {
 // btn.onclick = changeStatusPlay;
 // prev.onclick = prevSong;
 // next.onclick = nextSong;
-// repeat.onclick = repeatVideo;
+// repeat.onclick = loopVideo;
 // ok.onclick = changePlaylistId;
 
 function playButton(play) {
@@ -376,9 +379,9 @@ function stopVideo() {
 
 //previous song
 function prevSong() {
-  if (repeatStatus == 1) {
+  if (loopStatus == 1) {
     repeat.style.opacity = "0.3";
-    repeatStatus = 0;
+    loopStatus = 0;
   }
   playButton(false);
   stopVideo();
@@ -392,15 +395,15 @@ function prevSong() {
   player.loadVideoById({ videoId: id });
   $('#song-title').text(listVid[rand].title);
   $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
-  // bg.style.backgroundImage = `url('https://i3.ytimg.com/vi/${id}/maxresdefault.jpg')`;
+  showActiveSong()
   playButton(true);
 }
 
 //next song
 function nextSong() {
-  if (repeatStatus == 1) {
+  if (loopStatus == 1) {
     repeat.style.opacity = "0.3";
-    repeatStatus = 0;
+    loopStatus = 0;
   }
   playButton(false);
   stopVideo();
@@ -414,8 +417,7 @@ function nextSong() {
   player.loadVideoById({ videoId: id });
   $('#song-title').text(listVid[rand].title);
   $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
-  // musicPlayer.style.backgroundImage = `url('https://i3.ytimg.com/vi/${id}/maxresdefault.jpg')`;
-  // bg.style.backgroundImage = `url('https://i3.ytimg.com/vi/${id}/maxresdefault.jpg')`;
+  showActiveSong()
   playButton(true);
 
 }
@@ -427,7 +429,8 @@ function playMusicById(id) {
 
 // on Song end
 function nextVideo() {
-  if (repeatStatus == 1) {
+  if (loopStatus == 1) {
+    //TODO về sau đổi thành nếu loop=1 thì không xóa bài hiện tại, tiếp tục phát, còn không thì phát xong phát xóa luôn
     player.loadVideoById({ videoId: listVid[rand].idVid });
   } else {
     rand = Math.round(Math.random() * listVid.length);
@@ -436,19 +439,19 @@ function nextVideo() {
     player.loadVideoById({ videoId: id });
     $('#song-title').text(listVid[rand].title);
     $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
-    // bg.style.backgroundImage = `url('https://i3.ytimg.com/vi/${id}/maxresdefault.jpg')`;
+    showActiveSong()
   }
 
 }
 
 //Repeat
-function repeatVideo() {
-  if (repeatStatus == 0) {
-    repeat.style.opacity = "0.8";
-    repeatStatus = 1;
+function loopVideo() {
+  if (loopStatus == 0) {
+    $('#loopBtn').attr("xlink:href", "#loop-active");
+    loopStatus = 1;
   } else {
-    repeat.style.opacity = "0.3";
-    repeatStatus = 0;
+    $('#loopBtn').attr("xlink:href", "#loop");
+    loopStatus = 0;
   }
 }
 
