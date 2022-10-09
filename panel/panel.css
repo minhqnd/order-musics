@@ -376,6 +376,7 @@ a {
 .music-player-container .music-player-content main .music-player-main .current-select-category-container .current-select-category-info .poster-box .front,
 .music-player-container .music-player-content main .music-player-main .current-select-category-container .current-select-category-info .poster-box .back {
   position: absolute;
+  border-radius: 50px;
   height: 100%;
   width: 100%;
   top: 0;
