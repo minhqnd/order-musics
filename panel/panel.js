@@ -125,7 +125,7 @@ getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
       getVideosItems(list.toString()).then(data => {
         data.forEach(item => {
           item.items.forEach((i,index) => {
-            listVid[index].duration = YTDurationToSeconds(i.contentDetails.duration)
+            listVid[index].duration = YTDurationToSeconds(i.contentDetails.duration) 
           })
         })
         console.log(listVid)  
@@ -133,9 +133,6 @@ getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
       }).catch(err => {
           console.log(err)
         });
-
-
-      // item.items.forEach(i => $('.song-list').append(renderItem(i.snippet.title, i.snippet.channelTitle, i.snippet.resourceId.videoId)))
     });
 
     //create random index
@@ -156,23 +153,20 @@ var listDuration = []
 
 
 function YTDurationToSeconds(duration) {
-  var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+  var reptms = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
+  var hours = 0, minutes = 0, seconds = 0, totalseconds;
 
-  match = match.slice(1).map(function (x) {
-    if (x != null) {
-      return x.replace(/\D/, '');
+  if (reptms.test(duration)) {
+    var matches = reptms.exec(duration);
+    if (matches[1]) hours = Number(matches[1]);
+    if (matches[2]) minutes = Number(matches[2]);
+    if (matches[3]) seconds = Number(matches[3]);
+    var totalseconds = hours * 3600 + minutes *  60 + seconds;
+    if (seconds < 3600) {
+    return new Date(totalseconds * 1000).toISOString().substring(14, 19)
+    } else {
+      return new Date(totalseconds * 1000).toISOString().substring(11, 16)
     }
-  });
-
-  var hours = (parseInt(match[0]) || 0);
-  var minutes = (parseInt(match[1]) || 0);
-  var seconds = (parseInt(match[2]) || 0);
-
-  // return hours * 3600 + minutes * 60 + seconds;
-  if (hours == 0) {
-    return `${minutes}:${seconds}`;
-  } else {
-    return `${hours}:${minutes}:${seconds}`;
   }
 }
 
