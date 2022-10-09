@@ -115,7 +115,7 @@ const getVideosItems = async ID => {
 
 function showActiveSong() {
   $('.song-list-item').removeClass('active')
-  $('.song-name:contains(' + listVid[rand].title + ')').parent().parent().addClass('active')
+  $('.song-name:contains(' + $('#song-title').text() + ')').parent().parent().addClass('active')
 }
 
 
@@ -135,7 +135,7 @@ getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
         })
         listVid.forEach(i => {
           $('.song-list-default').append(renderItem(i.title, i.artist, i.idVid, i.duration))
-          showActiveSong()
+          setOnClickSong()
         })
       }).catch(err => {
         console.log(err)
@@ -239,6 +239,7 @@ $('.current-playing-time').change(function () {
 
 //! cách này hơi ngu nhưng phải dùng vì nếu dùng youtube API thì ngốn quota vcl =)), search 100 bài hết mẹ quota của ngày
 function getIdVideoBySearch(query) {
+  $('.suggestItem').remove()
   $.getJSON('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.youtube.com/results?search_query=' + query), function (data) {
     var index = data.contents.toString()
     var indexIndexOf = index.indexOf('/watch?v=') + 9
@@ -252,7 +253,7 @@ var listVidUser = []
 
 function addVideoBySearch(id) {
   console.log(id)
-  playMusicById(id)
+  // playMusicById(id)
   getVideosItems(id).then(data => {
     data.forEach(item => {
       console.log(item.items)
@@ -260,12 +261,14 @@ function addVideoBySearch(id) {
         var title = i.snippet.title
         var artist = i.snippet.channelTitle
         var duration = YTDurationToSeconds(i.contentDetails.duration)
-        listVidUser.unshift({ title: title, idVid: id, artist: artist, duration: duration})
+        listVidUser.unshift({ title: title, idVid: id, artist: artist, duration: duration })
+        playMusicById(id)
         $('.song-list-user').append(renderItem(title, artist, id, duration))
         $('#song-title').text(title);
         $('#song-artist').text(artist)
         $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
-
+        showActiveSong()
+        setOnClickSong()
       })
     })
     $('.song-list-default').css('opacity', '0.2');
@@ -299,13 +302,14 @@ function onYouTubeIframeAPIReady() {
 
     }
   });
-  
+
   $('#song-title').text(listVid[rand].title);
   $('#song-artist').text(listVid[rand].artist)
   $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${listVid[rand].idVid}/maxresdefault.jpg`);
   // console.log(listVid[rand].idVid)
 
   setInterval(function () {
+    showActiveSong()
     if (player.getPlayerState() == 0) {
       nextVideo();
       playButton(true);
@@ -320,22 +324,9 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
   player.setPlaybackQuality("small");
-  // btn.show()
-  // prev.show()
-  // next.show()
-  // btn2.show()
-  // repeat.show()
-  // form.style.display = "flex";
   $('#song-title').text(listVid[rand].title);
   playButton(player.getPlayerState() !== 5);
 }
-
-//On click button
-// btn.onclick = changeStatusPlay;
-// prev.onclick = prevSong;
-// next.onclick = nextSong;
-// repeat.onclick = loopVideo;
-// ok.onclick = changePlaylistId;
 
 function playButton(play) {
   if (play) {
@@ -380,7 +371,7 @@ function stopVideo() {
 //previous song
 function prevSong() {
   if (loopStatus == 1) {
-    repeat.style.opacity = "0.3";
+    $('#loopBtn').attr("xlink:href", "#loop");
     loopStatus = 0;
   }
   playButton(false);
@@ -585,3 +576,26 @@ function rand_from_seed(x, iterations) {
 }
 
 $('.pin').text(rand_from_seed(~~((new Date) / 86400000)))
+
+
+
+//* onclick on someone song
+function setOnClickSong() {
+  $(".song-list-item").prop("onclick", null).off("click");
+  $(".song-list-item").on("click", function () {
+    var songTitle = $(this).children('div').children('div').children('h3').text()
+    console.log(songTitle);
+    console.log(listVid.find(({ title }) => title === songTitle))
+    playByClick(listVid.find(({ title }) => title === songTitle))
+  });
+}
+
+function playByClick(data) {
+  playMusicById(data.idVid)
+  // $('.song-list-user').append(renderItem(title, artist, id, duration))
+  $('#song-title').text(data.title);
+  $('#song-artist').text(data.artist)
+  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${data.idVid}/maxresdefault.jpg`);
+  showActiveSong()
+  setOnClickSong()
+}
