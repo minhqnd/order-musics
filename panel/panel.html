@@ -84,7 +84,10 @@
           <div class="music-player-header">
             <div class="search-form-container">
               <form role="search" id="form">
-                <input type="search" id="query" name="q" placeholder="Tìm kiếm..." autocomplete="off" />
+                <div class="autocomplete" style="width:100%;">
+                <input type="search" id="search" name="q" placeholder="Tìm kiếm..." autocomplete="off" />
+                <div id="autocomplete-list" class="autocomplete-items"></div>
+              </div>
                 <button>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7" <g class="search-path" fill="none"
                     stroke="#848F91">
@@ -146,7 +149,8 @@
               </div>
               <div class="song-list scrollbar">
                 <div class="song-list-item">
-                  <img class="thumbnail" src="https://i.pinimg.com/736x/a8/dd/f0/a8ddf0248f382072d94aff24097388ce--cool-music-new-music.jpg"></img>
+                  <img class="thumbnail"
+                    src="https://i.pinimg.com/736x/a8/dd/f0/a8ddf0248f382072d94aff24097388ce--cool-music-new-music.jpg"></img>
                   <div class="song-info">
                     <div class="song-name">
                       <h3>Sidewalks</h3>
@@ -183,8 +187,8 @@
 
         <div class="current-playing-song-controls">
           <div class="song-name">
-            <h4 id='song-title'>The Weeknd - False Alarm (Audio)</h4>
-            <p><strong id='song-artist'>The Weeknd</strong></p>
+            <h4 id='song-title'>Loading...</h4>
+            <p><strong id='song-artist'>Loading...</strong></p>
           </div>
 
           <div class="controls">
@@ -218,7 +222,7 @@
             <svg class="volumeButton" data-v-0971d7ee="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
               <use xlink:href="#volume"></use>
             </svg>
-            <input type="range" min="1" max="100" value="100"  class="volume"></input>
+            <input type="range" min="1" max="100" value="100" class="volume"></input>
           </div>
         </div>
       </div>
@@ -286,4 +290,5 @@
 <!-- <script src="https://cdn.rawgit.com/labnol/files/master/yt.js"></script> -->
 <script src="./axios.min.js"></script>
 <script src="./panel.js"></script>
+
 </html>

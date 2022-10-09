@@ -28,7 +28,7 @@ function renderItem(title, artist, id, duration) {
                 </div>`
 }
 
-const apiKeyList = ["AIzaSyAKkNJJh2kbSgl31RObQuuEaS_6oRzT30Q", "AIzaSyAvPUsjjqCxjx9ZlIZh-EcdiBAFbJOeoO0", "AIzaSyB56E3cgBh0TMpNi5WQJT9AMFtChFIeEIo"];
+const apiKeyList = ["AIzaSyAvPUsjjqCxjx9ZlIZh-EcdiBAFbJOeoO0", "AIzaSyAKkNJJh2kbSgl31RObQuuEaS_6oRzT30Q", "AIzaSyB56E3cgBh0TMpNi5WQJT9AMFtChFIeEIo"];
 var apiKey = apiKeyList[0];
 var listVid = [];
 var player;
@@ -114,28 +114,26 @@ const getVideosItems = async ID => {
 
 
 
-//Get Title video and videoId
+// * Get Title, id, artist, duration
 getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
   .then(data => {
     data.forEach(item => {
-      // item.items.forEach(i => console.log(i.snippet));
       item.items.forEach(i => listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId, artist: i.snippet.channelTitle }));
       var list = item.items.map(a => (a.snippet.resourceId.videoId))
 
       getVideosItems(list.toString()).then(data => {
         data.forEach(item => {
-          item.items.forEach((i,index) => {
-            listVid[index].duration = YTDurationToSeconds(i.contentDetails.duration) 
+          item.items.forEach((i, index) => {
+            listVid[index].duration = YTDurationToSeconds(i.contentDetails.duration)
           })
         })
-        console.log(listVid)  
         listVid.forEach(i => $('.song-list').append(renderItem(i.title, i.artist, i.idVid, i.duration)))
       }).catch(err => {
-          console.log(err)
-        });
+        console.log(err)
+      });
     });
 
-    //create random index
+    // * create random index
     rand = Math.floor(Math.random() * listVid.length);
     checkPrivate();
     tag.src = "https://www.youtube.com/iframe_api";
@@ -151,7 +149,7 @@ getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
 var listDuration = []
 
 
-
+//* convert YT api to hh:mm:ss
 function YTDurationToSeconds(duration) {
   var reptms = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
   var hours = 0, minutes = 0, seconds = 0, totalseconds;
@@ -161,9 +159,9 @@ function YTDurationToSeconds(duration) {
     if (matches[1]) hours = Number(matches[1]);
     if (matches[2]) minutes = Number(matches[2]);
     if (matches[3]) seconds = Number(matches[3]);
-    var totalseconds = hours * 3600 + minutes *  60 + seconds;
+    var totalseconds = hours * 3600 + minutes * 60 + seconds;
     if (seconds < 3600) {
-    return new Date(totalseconds * 1000).toISOString().substring(14, 19)
+      return new Date(totalseconds * 1000).toISOString().substring(14, 19)
     } else {
       return new Date(totalseconds * 1000).toISOString().substring(11, 16)
     }
@@ -195,7 +193,30 @@ function changeAPIKey(newKey, err) {
 }
 
 
-//setvolume 
+
+
+
+//! Cái này chiếm quota vcl, request ít thôi
+function getSearchSuggest(input) {
+  $.getJSON('https://api.allorigins.win/get?url=' + encodeURIComponent('http://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=' + input), function (data) {
+    // var result = data.contents;
+    getListSuggest(data.contents)
+    // console.log(result);
+  });
+};
+// function getSearchSuggest(input) {
+//   const result = axios.get(`https://www.googleapis.com/youtube/v3/search`, {
+//     params: {
+//       part: 'snippet',
+//       q: input,
+//       key: 'AIzaSyB56E3cgBh0TMpNi5WQJT9AMFtChFIeEIo'
+//     }
+//   })
+//   return result;
+// };
+
+
+//* setvolume 
 $('.volume').on('input', function () {
   player.setVolume(this.value)
   var value = (this.value - this.min) / (this.max - this.min) * 100
@@ -204,6 +225,8 @@ $('.volume').on('input', function () {
 
 var onChangeTime = false
 
+
+//* set time play
 $('.current-playing-time').on('input', function () {
   onChangeTime = true
   var value = (this.value - this.min) / (this.max - this.min) * 100
@@ -263,12 +286,12 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
   player.setPlaybackQuality("small");
-  btn.show()
-  prev.show()
-  next.show()
-  btn2.show()
-  repeat.show()
-  form.style.display = "flex";
+  // btn.show()
+  // prev.show()
+  // next.show()
+  // btn2.show()
+  // repeat.show()
+  // form.style.display = "flex";
   $('#song-title').text(listVid[rand].title);
   playButton(player.getPlayerState() !== 5);
 }
@@ -448,4 +471,120 @@ function changePlaylistId() {
       playButton(true);
     });
 
+}
+
+
+//* AUTO complete
+
+function renderSuggest(item) {
+  return `<div class="suggestItem"><strong></strong>${item}<input type="hidden" value="${item}"></div>`
+}
+
+
+// $("#search").input(function () {
+//   getSearchSuggest(this.val)
+// });
+
+$('#search').keyup(function (e) {
+  $('#search').val() ? getSearchSuggest($('#search').val()) : $('.suggestItem').remove()
+  
+});
+
+function getListSuggest(data) {
+  var ListSuggest = JSON.parse(data)[1]
+  console.log(ListSuggest)
+  autocomplete(document.getElementById("search"), ListSuggest);
+}
+
+function autocomplete(inp, arr) {
+  $('.suggestItem').remove()
+  arr.forEach(item => {
+    $('#autocomplete-list').append(renderSuggest(item))
+  })
+  /*the autocomplete function takes two arguments,
+  the text field element and an array of possible autocompleted values:*/
+  var currentFocus;
+  /*execute a function when someone writes in the text field:*/
+
+  // inp.addEventListener("input", function (e) {
+  //   var a, b, i, val = this.value;
+  //   /*close any already open lists of autocompleted values*/
+  //   closeAllLists();
+  //   // if (!val) { return false; }
+  //   currentFocus = -1;
+  //   /*create a DIV element that will contain the items (values):*/
+  //   a = document.createElement("DIV");
+  //   a.setAttribute("id", this.id + "autocomplete-list");
+  //   a.setAttribute("class", "autocomplete-items");
+  //   /*append the DIV element as a child of the autocomplete container:*/
+  //   this.parentNode.appendChild(a);
+  //   /*for each item in the array...*/
+  //   for (i = 0; i < arr.length; i++) {
+  //     /*check if the item starts with the same letters as the text field value:*/
+  //     // if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+  //       /*create a DIV element for each matching element:*/
+  //       b = document.createElement("DIV");
+  //       /*make the matching letters bold:*/
+  //       b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+  //       b.innerHTML += arr[i].substr(val.length);
+  //       /*insert a input field that will hold the current array item's value:*/
+  //       b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+  //       /*execute a function when someone clicks on the item value (DIV element):*/
+  //       b.addEventListener("click", function (e) {
+  //         /*insert the value for the autocomplete text field:*/
+  //         inp.value = this.getElementsByTagName("input")[0].value;
+  //         /*close the list of autocompleted values,
+  //         or any other open lists of autocompleted values:*/
+  //         closeAllLists();
+  //       });
+  //       a.appendChild(b);
+  //     // }
+  //   }
+  // });
+  /*execute a function presses a key on the keyboard:*/
+  inp.addEventListener("keydown", function (e) {
+    var x = document.getElementById(this.id + "autocomplete-list");
+    if (x) x = x.getElementsByTagName("div");
+    // console.log(x)
+    if (e.keyCode == 40) {
+      /*If the arrow DOWN key is pressed,
+      increase the currentFocus variable:*/
+      currentFocus++;
+      /*and and make the current item more visible:*/
+      addActive(x);
+    } else if (e.keyCode == 38) { //up
+      /*If the arrow UP key is pressed,
+      decrease the currentFocus variable:*/
+      currentFocus--;
+      /*and and make the current item more visible:*/
+      addActive(x);
+    } else if (e.keyCode == 13) {
+      /*If the ENTER key is pressed, prevent the form from being submitted,*/
+      e.preventDefault();
+      if (currentFocus > -1) {
+        /*and simulate a click on the "active" item:*/
+        if (x) x[currentFocus].click();
+      }
+    }
+  });
+  function addActive(x) {
+    /*a function to classify an item as "active":*/
+    if (!x) return false;
+    /*start by removing the "active" class on all items:*/
+    removeActive(x);
+    if (currentFocus >= x.length) currentFocus = 0;
+    if (currentFocus < 0) currentFocus = (x.length - 1);
+    /*add class "autocomplete-active":*/
+    x[currentFocus].classList.add("autocomplete-active");
+  }
+  function removeActive(x) {
+    /*a function to remove the "active" class from all autocomplete items:*/
+    for (var i = 0; i < x.length; i++) {
+      x[i].classList.remove("autocomplete-active");
+    }
+  }
+  /*execute a function when someone clicks in the document:*/
+  document.addEventListener("click", function (e) {
+    $('.suggestItem').remove()
+  });
 }
