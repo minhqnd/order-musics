@@ -616,6 +616,7 @@ a {
 }
 
 .music-player-container .music-player-content .music-player .current-playing-time {
+  cursor: pointer;
   position: absolute;
   transform: scaleY(-5px);
   height: 5px;
