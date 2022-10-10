@@ -50,8 +50,9 @@ var icon = document.getElementById('icon');
 var icon2 = document.getElementById('icon2');
 var para = document.getElementById('title');
 
-var rand;
+var posVid;
 var loopStatus = 0;
+var shuffleStatus = 0;
 
 //Request Playlist Item
 const getPlayListItems = async playlistID => {
@@ -142,8 +143,7 @@ getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
       });
     });
 
-    // * create random index
-    rand = Math.floor(Math.random() * listVid.length);
+    posVid = 0
 
     checkPrivate();
     tag.src = "https://www.youtube.com/iframe_api";
@@ -158,6 +158,9 @@ getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
 
 var listDuration = []
 
+
+//! RAMDOM POSVID
+// Math.floor(Math.random() * listVid.length);
 
 //* convert YT api to hh:mm:ss
 function YTDurationToSeconds(duration) {
@@ -187,7 +190,7 @@ function changeAPIKey(newKey, err) {
         data.forEach(item => {
           item.items.forEach(i => listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId }));
 
-          rand = Math.floor(Math.random() * listVid.length);
+          posVid = 0
           checkPrivate();
           tag.src = "https://www.youtube.com/iframe_api";
           var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -283,7 +286,7 @@ function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
     height: '0',
     width: '0',
-    videoId: listVid[rand].idVid,
+    videoId: listVid[posVid].idVid,
     events: {
       'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange
@@ -303,10 +306,10 @@ function onYouTubeIframeAPIReady() {
     }
   });
 
-  $('#song-title').text(listVid[rand].title);
-  $('#song-artist').text(listVid[rand].artist)
-  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${listVid[rand].idVid}/maxresdefault.jpg`);
-  // console.log(listVid[rand].idVid)
+  $('#song-title').text(listVid[posVid].title);
+  $('#song-artist').text(listVid[posVid].artist)
+  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${listVid[posVid].idVid}/maxresdefault.jpg`);
+  // console.log(listVid[posVid].idVid)
 
   setInterval(function () {
     showActiveSong()
@@ -324,7 +327,7 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
   player.setPlaybackQuality("small");
-  $('#song-title').text(listVid[rand].title);
+  $('#song-title').text(listVid[posVid].title);
   playButton(player.getPlayerState() !== 5);
 }
 
@@ -376,37 +379,37 @@ function prevSong() {
   }
   playButton(false);
   stopVideo();
-  if (rand - 1 < 0) {
-    rand = listVid.length - 1;
+  if (posVid - 1 < 0) {
+    posVid = listVid.length - 1;
   } else {
-    rand -= 1;
+    posVid -= 1;
   }
   checkPrivateBack();
-  var id = listVid[rand].idVid;
+  var id = listVid[posVid].idVid;
   player.loadVideoById({ videoId: id });
-  $('#song-title').text(listVid[rand].title);
+  $('#song-title').text(listVid[posVid].title);
   $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
   showActiveSong()
   playButton(true);
 }
 
-//next song
+//* SKIP BUTTON
 function nextSong() {
   if (loopStatus == 1) {
-    repeat.style.opacity = "0.3";
+    $('#loopBtn').attr("xlink:href", "#loop");
     loopStatus = 0;
   }
   playButton(false);
   stopVideo();
-  if (rand + 1 == listVid.length) {
-    rand = 0;
+  if (posVid + 1 == listVid.length) {
+    posVid = 0;
   } else {
-    rand += 1;
+    posVid += 1;
   }
   checkPrivate();
-  var id = listVid[rand].idVid;
+  var id = listVid[posVid].idVid;
   player.loadVideoById({ videoId: id });
-  $('#song-title').text(listVid[rand].title);
+  $('#song-title').text(listVid[posVid].title);
   $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
   showActiveSong()
   playButton(true);
@@ -422,17 +425,32 @@ function playMusicById(id) {
 function nextVideo() {
   if (loopStatus == 1) {
     //TODO về sau đổi thành nếu loop=1 thì không xóa bài hiện tại, tiếp tục phát, còn không thì phát xong phát xóa luôn
-    player.loadVideoById({ videoId: listVid[rand].idVid });
+    player.loadVideoById({ videoId: listVid[posVid].idVid });
   } else {
-    rand = Math.round(Math.random() * listVid.length);
+    stopVideo();
+    if (posVid + 1 == listVid.length) {
+      posVid = 0;
+    } else {
+      posVid += 1;
+    }
     checkPrivate();
-    var id = listVid[rand].idVid;
+    var id = listVid[posVid].idVid;
     player.loadVideoById({ videoId: id });
-    $('#song-title').text(listVid[rand].title);
+    $('#song-title').text(listVid[posVid].title);
     $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
     showActiveSong()
   }
 
+}
+
+function shuffle() {
+  if (shuffleStatus == 0) {
+    $('#shuffleBtn').attr("xlink:href", "#shuffle-active");
+    shuffleStatus = 1;
+  } else {
+    $('#shuffleBtn').attr("xlink:href", "#shuffle");
+    shuffleStatus = 0;
+  }
 }
 
 //Repeat
@@ -448,22 +466,22 @@ function loopVideo() {
 
 //Check private or deleted video
 function checkPrivate() {
-  if (listVid[rand].title == "Private video" || listVid[rand].title == "Deleted video") {
-    if (rand == listVid.length - 1) {
-      rand = 0;
+  if (listVid[posVid].title == "Private video" || listVid[posVid].title == "Deleted video") {
+    if (posVid == listVid.length - 1) {
+      posVid = 0;
     } else {
-      rand += 1;
+      posVid += 1;
     }
     checkPrivate();
   }
 };
 
 function checkPrivateBack() {
-  if (listVid[rand].title == "Private video" || listVid[rand].title == "Deleted video") {
-    if (rand == 0) {
-      rand = listVid.length - 1;
+  if (listVid[posVid].title == "Private video" || listVid[posVid].title == "Deleted video") {
+    if (posVid == 0) {
+      posVid = listVid.length - 1;
     } else {
-      rand -= 1;
+      posVid -= 1;
     }
     checkPrivateBack();
   }
@@ -489,15 +507,15 @@ function changePlaylistId() {
       data.forEach(item => {
         item.items.forEach(i => listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId }));
       });
-      rand = Math.floor(Math.random() * listVid.length);
+      posVid = 0
       checkPrivate();
       btn.show()
       prev.show()
       next.show()
       btn2.show()
       repeat.show()
-      $('#song-title').text(listVid[rand].title);
-      player.loadVideoById({ videoId: listVid[rand].idVid });
+      $('#song-title').text(listVid[posVid].title);
+      player.loadVideoById({ videoId: listVid[posVid].idVid });
       playButton(true);
     });
 
@@ -607,3 +625,5 @@ function playByClick(data) {
   showActiveSong()
   setOnClickSong()
 }
+
+//TODO Swap 2 song, var v1 v2 = html, then swap
