@@ -79,6 +79,7 @@ var btn2 = document.getElementById('btn2');
 var icon = document.getElementById('icon');
 var icon2 = document.getElementById('icon2');
 var para = document.getElementById('title');
+var defaultPlaylist = true
 
 var posVid;
 var loopStatus = 0;
@@ -643,17 +644,17 @@ $('.pin').text(rand_from_seed(getDDMM()))
 
 //* onclick on someone song
 function setOnClickSong() {
-    $(".song-list-item").prop("onclick", null).off("click");
-    $(".song-list-item").on("click", function () {
-      var songTitle = $(this).children('div').children('div').children('h3').text()
-      console.log(songTitle);
-      console.log(listVid.find(({ title }) => title === songTitle))
-      playByClick(listVid.find(({ title }) => title === songTitle))
-    });
-    $('.song-duration').on('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    });
+  $(".song-list-item").prop("onclick", null).off("click");
+  $(".song-list-item").on("click", function () {
+    var songTitle = $(this).children('div').children('div').children('h3').text()
+    console.log(songTitle);
+    console.log(listVid.find(({ title }) => title === songTitle))
+    playByClick(listVid.find(({ title }) => title === songTitle))
+  });
+  $('.song-duration').on('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  });
 }
 
 function removeSetOnClickSong() {
@@ -671,8 +672,6 @@ function playByClick(data) {
 
 //TODO Swap 2 song, var v1 v2 = html, then swap
 
-var swaping = false
-
 function swapUpDOMListVid(clickedPos, clickedList) {
   //! phải thay đổi từng element không bị dính onclick khi swap html
   if (clickedPos !== 0) {
@@ -682,7 +681,7 @@ function swapUpDOMListVid(clickedPos, clickedList) {
     var tempImg = $('.' + clickedList).children().eq(clickedPos).children('img').attr('src') //source 2
 
     var tempPreArtist = $('.' + clickedList).children().eq(clickedPos - 1).children('div').children('div').children('p').text() // artist 2
-    var tempPreTitle = $('.' + clickedList).children().eq(clickedPos -1).children('div').children('div').children('h3').text() // title 2
+    var tempPreTitle = $('.' + clickedList).children().eq(clickedPos - 1).children('div').children('div').children('h3').text() // title 2
     var tempPreDuration = $('.' + clickedList).children().eq(clickedPos - 1).children('div').children('div').children('span').text() // duration 2
     var tempPreImg = $('.' + clickedList).children().eq(clickedPos - 1).children('img').attr('src')
 
@@ -694,27 +693,65 @@ function swapUpDOMListVid(clickedPos, clickedList) {
     $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('p').text(tempPreArtist)
     $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('h3').text(tempPreTitle)
     $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('span').text(tempPreDuration)
-    $('.' + clickedList).children().eq(clickedPos).children('img').attr('src', tempPreImg )
+    $('.' + clickedList).children().eq(clickedPos).children('img').attr('src', tempPreImg)
+  }
+
+}
+
+
+function swapDownDOMListVid(clickedPos, clickedList) {
+  if (clickedPos !== $('.' + clickedList).children().length - 1) {
+    var tempArtist = $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('p').text() // artist 1
+    var tempTitle = $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('h3').text() // title 1
+    var tempDuration = $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('span').text() // duration
+    var tempImg = $('.' + clickedList).children().eq(clickedPos).children('img').attr('src') //source 2
+
+    var tempPreArtist = $('.' + clickedList).children().eq(clickedPos + 1).children('div').children('div').children('p').text() // artist 2
+    var tempPreTitle = $('.' + clickedList).children().eq(clickedPos + 1).children('div').children('div').children('h3').text() // title 2
+    var tempPreDuration = $('.' + clickedList).children().eq(clickedPos + 1).children('div').children('div').children('span').text() // duration 2
+    var tempPreImg = $('.' + clickedList).children().eq(clickedPos + 1).children('img').attr('src')
+
+    $('.' + clickedList).children().eq(clickedPos + 1).children('div').children('div').children('p').text(tempArtist)
+    $('.' + clickedList).children().eq(clickedPos + 1).children('div').children('div').children('h3').text(tempTitle)
+    $('.' + clickedList).children().eq(clickedPos + 1).children('div').children('div').children('span').text(tempDuration)
+    $('.' + clickedList).children().eq(clickedPos + 1).children('img').attr('src', tempImg)
+
+    $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('p').text(tempPreArtist)
+    $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('h3').text(tempPreTitle)
+    $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('span').text(tempPreDuration)
+    $('.' + clickedList).children().eq(clickedPos).children('img').attr('src', tempPreImg)
   }
 
 }
 
 function swapArrayListVid(a, b) {
-  var temp = a;
+  var temp = listVid[a];
+  if (defaultPlaylist) {
   listVid[a] = listVid[b];
   listVid[b] = temp;
+  }
 };
 
 function changePosUp(data) {
-
   //get postion of div clicked
   var clickedPos = $(data).parent().parent().parent().index()
   var clickedList = $(data).parent().parent().parent().parent().attr('class')
-  console.log(clickedPos)
-  console.log(clickedList)
-  console.log()
   swapUpDOMListVid(clickedPos, clickedList)
+  swapArrayListVid(clickedPos, clickedPos - 1)
+
 }
 
-// this.myArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-// this.myArray.swapArray(3, 7);
+function changePosDown(data) {
+  //get postion of div clicked
+  var clickedPos = $(data).parent().parent().parent().index()
+  var clickedList = $(data).parent().parent().parent().parent().attr('class')
+  swapDownDOMListVid(clickedPos, clickedList)
+  swapArrayListVid(clickedPos, clickedPos + 1)
+}
+
+//* Space button to start stop song
+document.addEventListener("keydown", function (e) {
+  if (e.keyCode == 32) {
+    changeStatusPlay()
+  }
+});
