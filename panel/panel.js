@@ -17,7 +17,7 @@ function renderItem(title, artist, id, duration) {
                           <use xlink:href="#downsvg"></use>
                         </svg>
                       </button>
-                      <button class="cursordel">
+                      <button onclick="deleteSong(this)" class="cursordel">
                         <svg width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 30 30">
                           <use xlink:href="#deletesvg"></use>
                         </svg>
@@ -47,7 +47,7 @@ function renderItemToSwap(title, artist, image, duration) {
                           <use xlink:href="#downsvg"></use>
                         </svg>
                       </button>
-                      <button class="cursordel">
+                      <button onclick="deleteSong(this)" class="cursordel">
                         <svg width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 30 30">
                           <use xlink:href="#deletesvg"></use>
                         </svg>
@@ -725,10 +725,14 @@ function swapDownDOMListVid(clickedPos, clickedList) {
 }
 
 function swapArrayListVid(a, b) {
-  var temp = listVid[a];
   if (defaultPlaylist) {
+  var temp = listVid[a];
   listVid[a] = listVid[b];
   listVid[b] = temp;
+  } else {
+    var temp = listVidUser[a];
+    listVidUser[a] = listVid[b];
+    listVidUser[b] = temp;
   }
 };
 
@@ -755,3 +759,5 @@ document.addEventListener("keydown", function (e) {
     changeStatusPlay()
   }
 });
+
+deleteSong
