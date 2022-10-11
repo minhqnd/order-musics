@@ -509,7 +509,7 @@ a {
   display: block;
   left: 0;
   bottom: 0;
-  background: #ff2152;
+  /* background: #ff2152; */
   position: absolute;
   height: 70px;
 }
