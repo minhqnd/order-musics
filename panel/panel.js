@@ -7,12 +7,12 @@ function renderItem(title, artist, id, duration) {
                       <p>${artist}</p>
                     </div>
                     <div class="song-duration">
-                      <button class="cursorup">
+                      <button onclick="changePosUp(this)" class="cursorup">
                         <svg width="32px" height="32px" viewBox="0 0 490 490" xmlns="http://www.w3.org/2000/svg">
                           <use xlink:href="#upsvg"></use>
                         </svg>
                       </button>
-                      <button class="cursordown">
+                      <button onclick="changePosDown(this)" class="cursordown">
                         <svg width="32px" height="32px" viewBox="0 0 490 490" xmlns="http://www.w3.org/2000/svg">
                           <use xlink:href="#downsvg"></use>
                         </svg>
@@ -26,6 +26,36 @@ function renderItem(title, artist, id, duration) {
                     </div>
                   </div>
                 </div>`
+}
+
+function renderItemToSwap(title, artist, image, duration) {
+  return `
+                  <img src='${image}' class="thumbnail">
+                  <div class="song-info">
+                    <div class="song-name">
+                      <h3>${title}</h3>
+                      <p>${artist}</p>
+                    </div>
+                    <div class="song-duration">
+                      <button onclick="changePosUp(this)" class="cursorup">
+                        <svg width="32px" height="32px" viewBox="0 0 490 490" xmlns="http://www.w3.org/2000/svg">
+                          <use xlink:href="#upsvg"></use>
+                        </svg>
+                      </button>
+                      <button onclick="changePosDown(this)" class="cursordown">
+                        <svg width="32px" height="32px" viewBox="0 0 490 490" xmlns="http://www.w3.org/2000/svg">
+                          <use xlink:href="#downsvg"></use>
+                        </svg>
+                      </button>
+                      <button class="cursordel">
+                        <svg width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 30 30">
+                          <use xlink:href="#deletesvg"></use>
+                        </svg>
+                      </button>
+                      <span>${duration}</span>
+                    </div>
+                  </div>
+                `
 }
 
 const apiKeyList = ["AIzaSyAvPUsjjqCxjx9ZlIZh-EcdiBAFbJOeoO0", "AIzaSyAKkNJJh2kbSgl31RObQuuEaS_6oRzT30Q", "AIzaSyB56E3cgBh0TMpNi5WQJT9AMFtChFIeEIo"];
@@ -52,7 +82,7 @@ var para = document.getElementById('title');
 
 var posVid;
 var loopStatus = 0;
-var shuffleStatus = 0;
+var shuffleStatus = false;
 
 //Request Playlist Item
 const getPlayListItems = async playlistID => {
@@ -254,34 +284,6 @@ function getIdVideoBySearch(query) {
 // { title: "MONO - 'Quên Anh Đi' (Exclusive Performance Video)", idVid: "wwPYl5YizXg", artist: "Mono Official", duration: "04:13" }
 var listVidUser = []
 
-function addVideoBySearch(id) {
-  console.log(id)
-  // playMusicById(id)
-  getVideosItems(id).then(data => {
-    data.forEach(item => {
-      console.log(item.items)
-      item.items.forEach((i, index) => {
-        var title = i.snippet.title
-        var artist = i.snippet.channelTitle
-        var duration = YTDurationToSeconds(i.contentDetails.duration)
-        listVidUser.unshift({ title: title, idVid: id, artist: artist, duration: duration })
-        playMusicById(id)
-        $('.song-list-user').append(renderItem(title, artist, id, duration))
-        $('#song-title').text(title);
-        $('#song-artist').text(artist)
-        $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
-        showActiveSong()
-        setOnClickSong()
-      })
-    })
-    $('.song-list-default').css('opacity', '0.2');
-  }).catch(err => {
-    console.log(err)
-  });
-}
-
-
-
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
     height: '0',
@@ -373,10 +375,10 @@ function stopVideo() {
 
 //previous song
 function prevSong() {
-  if (loopStatus == 1) {
-    $('#loopBtn').attr("xlink:href", "#loop");
-    loopStatus = 0;
-  }
+  // if (loopStatus !== 0) {
+  //   $('#loopBtn').attr("xlink:href", "#loop");
+  //   loopStatus = 0;
+  // }
   playButton(false);
   stopVideo();
   if (posVid - 1 < 0) {
@@ -395,10 +397,10 @@ function prevSong() {
 
 //* SKIP BUTTON
 function nextSong() {
-  if (loopStatus == 1) {
-    $('#loopBtn').attr("xlink:href", "#loop");
-    loopStatus = 0;
-  }
+  // if (loopStatus !== 0) {
+  //   $('#loopBtn').attr("xlink:href", "#loop");
+  //   loopStatus = 0;
+  // }
   playButton(false);
   stopVideo();
   if (posVid + 1 == listVid.length) {
@@ -423,10 +425,12 @@ function playMusicById(id) {
 
 // on Song end
 function nextVideo() {
-  if (loopStatus == 1) {
-    //TODO về sau đổi thành nếu loop=1 thì không xóa bài hiện tại, tiếp tục phát, còn không thì phát xong phát xóa luôn
+  if (loopStatus == 2) {
     player.loadVideoById({ videoId: listVid[posVid].idVid });
   } else {
+    if (shuffleStatus) {
+      posVid = Math.floor(Math.random() * listVid.length);
+    }
     stopVideo();
     if (posVid + 1 == listVid.length) {
       posVid = 0;
@@ -444,12 +448,12 @@ function nextVideo() {
 }
 
 function shuffle() {
-  if (shuffleStatus == 0) {
-    $('#shuffleBtn').attr("xlink:href", "#shuffle-active");
-    shuffleStatus = 1;
+  if (!shuffleStatus) {
+    $('.shuffleBtn').attr("xlink:href", "#shuffle-active");
+    shuffleStatus = true;
   } else {
-    $('#shuffleBtn').attr("xlink:href", "#shuffle");
-    shuffleStatus = 0;
+    $('.shuffleBtn').attr("xlink:href", "#shuffle");
+    shuffleStatus = false;
   }
 }
 
@@ -458,7 +462,11 @@ function loopVideo() {
   if (loopStatus == 0) {
     $('#loopBtn').attr("xlink:href", "#loop-active");
     loopStatus = 1;
-  } else {
+  } else if (loopStatus == 1) {
+    $('#loopBtn').attr("xlink:href", "#loop-active-song");
+    loopStatus = 2;
+  }
+  else {
     $('#loopBtn').attr("xlink:href", "#loop");
     loopStatus = 0;
   }
@@ -585,6 +593,34 @@ function autocomplete(inp, arr) {
 }
 
 
+function addVideoBySearch(id) {
+  $('.suggestItem').remove()
+  console.log(id)
+  // playMusicById(id)
+  getVideosItems(id).then(data => {
+    data.forEach(item => {
+      console.log(item.items)
+      item.items.forEach((i, index) => {
+        var title = i.snippet.title
+        var artist = i.snippet.channelTitle
+        var duration = YTDurationToSeconds(i.contentDetails.duration)
+        listVidUser.unshift({ title: title, idVid: id, artist: artist, duration: duration })
+        playMusicById(id)
+        $('.song-list-user').append(renderItem(title, artist, id, duration))
+        $('#song-title').text(title);
+        $('#song-artist').text(artist)
+        $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
+        showActiveSong()
+        setOnClickSong()
+      })
+    })
+    $('.song-list-default').css('opacity', '0.2');
+  }).catch(err => {
+    console.log(err)
+  });
+}
+
+
 //* random key connect
 function rand_from_seed(x, iterations) {
   iterations = iterations || 100;
@@ -598,7 +634,7 @@ function getDDMM() {
   const yyyy = today.getFullYear();
   let mm = today.getMonth() + 1; // Months start at 0!
   let dd = today.getDate();
-  return dd*100+mm
+  return dd * 100 + mm
 }
 
 $('.pin').text(rand_from_seed(getDDMM()))
@@ -607,18 +643,25 @@ $('.pin').text(rand_from_seed(getDDMM()))
 
 //* onclick on someone song
 function setOnClickSong() {
-  $(".song-list-item").prop("onclick", null).off("click");
-  $(".song-list-item").on("click", function () {
-    var songTitle = $(this).children('div').children('div').children('h3').text()
-    console.log(songTitle);
-    console.log(listVid.find(({ title }) => title === songTitle))
-    playByClick(listVid.find(({ title }) => title === songTitle))
-  });
+    $(".song-list-item").prop("onclick", null).off("click");
+    $(".song-list-item").on("click", function () {
+      var songTitle = $(this).children('div').children('div').children('h3').text()
+      console.log(songTitle);
+      console.log(listVid.find(({ title }) => title === songTitle))
+      playByClick(listVid.find(({ title }) => title === songTitle))
+    });
+    $('.song-duration').on('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+}
+
+function removeSetOnClickSong() {
+
 }
 
 function playByClick(data) {
   playMusicById(data.idVid)
-  // $('.song-list-user').append(renderItem(title, artist, id, duration))
   $('#song-title').text(data.title);
   $('#song-artist').text(data.artist)
   $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${data.idVid}/maxresdefault.jpg`);
@@ -627,3 +670,51 @@ function playByClick(data) {
 }
 
 //TODO Swap 2 song, var v1 v2 = html, then swap
+
+var swaping = false
+
+function swapUpDOMListVid(clickedPos, clickedList) {
+  //! phải thay đổi từng element không bị dính onclick khi swap html
+  if (clickedPos !== 0) {
+    var tempArtist = $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('p').text() // artist 1
+    var tempTitle = $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('h3').text() // title 1
+    var tempDuration = $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('span').text() // duration
+    var tempImg = $('.' + clickedList).children().eq(clickedPos).children('img').attr('src') //source 2
+
+    var tempPreArtist = $('.' + clickedList).children().eq(clickedPos - 1).children('div').children('div').children('p').text() // artist 2
+    var tempPreTitle = $('.' + clickedList).children().eq(clickedPos -1).children('div').children('div').children('h3').text() // title 2
+    var tempPreDuration = $('.' + clickedList).children().eq(clickedPos - 1).children('div').children('div').children('span').text() // duration 2
+    var tempPreImg = $('.' + clickedList).children().eq(clickedPos - 1).children('img').attr('src')
+
+    $('.' + clickedList).children().eq(clickedPos - 1).children('div').children('div').children('p').text(tempArtist)
+    $('.' + clickedList).children().eq(clickedPos - 1).children('div').children('div').children('h3').text(tempTitle)
+    $('.' + clickedList).children().eq(clickedPos - 1).children('div').children('div').children('span').text(tempDuration)
+    $('.' + clickedList).children().eq(clickedPos - 1).children('img').attr('src', tempImg)
+
+    $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('p').text(tempPreArtist)
+    $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('h3').text(tempPreTitle)
+    $('.' + clickedList).children().eq(clickedPos).children('div').children('div').children('span').text(tempPreDuration)
+    $('.' + clickedList).children().eq(clickedPos).children('img').attr('src', tempPreImg )
+  }
+
+}
+
+function swapArrayListVid(a, b) {
+  var temp = a;
+  listVid[a] = listVid[b];
+  listVid[b] = temp;
+};
+
+function changePosUp(data) {
+
+  //get postion of div clicked
+  var clickedPos = $(data).parent().parent().parent().index()
+  var clickedList = $(data).parent().parent().parent().parent().attr('class')
+  console.log(clickedPos)
+  console.log(clickedList)
+  console.log()
+  swapUpDOMListVid(clickedPos, clickedList)
+}
+
+// this.myArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+// this.myArray.swapArray(3, 7);
