@@ -113,36 +113,41 @@ const getPlayListItems = async playlistID => {
     token = result.data.nextPageToken;
     resultArr.push(result.data);
   }
+  console.log(resultArr.items);
   return resultArr;
 };
 
 
 const getVideosItems = async ID => {
+
+
+  
   var token;
   var resultArr = [];
   const result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
     params: {
-      part: 'id,contentDetails,snippet',
+      part: 'contentDetails',
       id: ID,
+      maxResults: 50,
       key: apiKey
     }
   })
-  token = result.data.nextPageToken;
   resultArr.push(result.data);
   while (token) {
     let result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
       params: {
-        part: 'id,contentDetails,snippet',
+        part: 'contentDetails',
         id: ID,
         key: apiKey,
         pageToken: token
       }
     })
-    token = result.data.nextPageToken;
     resultArr.push(result.data);
   }
   return resultArr;
 };
+
+
 
 
 function showActiveSong() {
@@ -153,14 +158,20 @@ function showActiveSong() {
 
 // * Get Title, id, artist, duration 
 //! GET DEFAULT PLAYLIST
-getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
+getPlayListItems("PLcWSuvkriTXaYcO0HyyH9-OFxr-QIH_wA")
   .then(data => {
+    console.log(data);
     data.forEach(item => {
-      item.items.forEach(i => listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId, artist: i.snippet.channelTitle }));
-      var list = item.items.map(a => (a.snippet.resourceId.videoId))
-
+      
+      item.items.forEach(i => {
+        listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId, artist: i.snippet.channelTitle })
+        
+      });
+      // console.log(listVid)
+      var list = listVid.map(a => (a.idVid))
       getVideosItems(list.toString()).then(data => {
         data.forEach(item => {
+          console.log(item);
           item.items.forEach((i, index) => {
             listVid[index].duration = YTDurationToSeconds(i.contentDetails.duration)
           })
