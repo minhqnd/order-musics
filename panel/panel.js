@@ -1,6 +1,6 @@
 function renderItem(title, artist, id, duration) {
   return `<div class="song-list-item">
-                  <img src='https://i3.ytimg.com/vi/${id}/mqdefault.jpg' class="thumbnail">
+                  <img src='https://i3.ytimg.com/vi/${id}/mqdefault.jpg' class="thumbnail" loading="lazy">
                   <div class="song-info">
                     <div class="song-name">
                       <h3>${title}</h3>
@@ -30,7 +30,7 @@ function renderItem(title, artist, id, duration) {
 
 function renderItemToSwap(title, artist, image, duration) {
   return `
-                  <img src='${image}' class="thumbnail">
+                  <img src='${image}' class="thumbnail" loading="lazy">
                   <div class="song-info">
                     <div class="song-name">
                       <h3>${title}</h3>
@@ -274,6 +274,7 @@ $('.current-playing-time').change(function () {
 //! cách này hơi ngu nhưng phải dùng vì nếu dùng youtube API thì ngốn quota vcl =)), search 100 bài hết mẹ quota của ngày
 function getIdVideoBySearch(query) {
   $('.suggestItem').remove()
+  spaceKeyDown()
   $.getJSON('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.youtube.com/results?search_query=' + query), function (data) {
     var index = data.contents.toString()
     var indexIndexOf = index.indexOf('/watch?v=') + 9
@@ -548,6 +549,11 @@ $('#search').on('input', function (e) {
 
 });
 
+$('#search').on('click', function (e) {
+  console.log('ccon');
+  document.onkeydown = null
+});
+
 function getListSuggest(data) {
   var ListSuggest = JSON.parse(data)[1]
   autocomplete(document.getElementById("search"), ListSuggest);
@@ -590,6 +596,7 @@ function autocomplete(inp, arr) {
   /*execute a function when someone clicks in the document:*/
   document.addEventListener("click", function (e) {
     $('.suggestItem').remove()
+    spaceKeyDown()
   });
 }
 
@@ -658,10 +665,6 @@ function setOnClickSong() {
     e.preventDefault();
     e.stopPropagation();
   });
-}
-
-function removeSetOnClickSong() {
-
 }
 
 function playByClick(data) {
@@ -758,12 +761,16 @@ function changePosDown(data) {
 }
 
 //* Space button to start stop song
-document.addEventListener("keydown", function (e) {
-  if (e.keyCode == 32) {
-    changeStatusPlay()
-  }
-});
+function spaceKeyDown() {
+  document.onkeydown = function (e) {
+    if (e.keyCode == 32) {
+      changeStatusPlay()
+    }
+  };
+}
+spaceKeyDown()
 
+//TODO nếu như còn bài cuối thì remove hết
 function deleteSong(data) {
   var clickedPos = $(data).parent().parent().parent().index()
   console.log(clickedPos);
@@ -793,5 +800,4 @@ function removeSongInList(data) {
   }
 }
 
-//TODO fix lỗi đang play, đổi vị trí thì sau khi skip vẫn là bài đấy
 //TODO Fix posVid
