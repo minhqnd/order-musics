@@ -647,9 +647,12 @@ function setOnClickSong() {
   $(".song-list-item").prop("onclick", null).off("click");
   $(".song-list-item").on("click", function () {
     var songTitle = $(this).children('div').children('div').children('h3').text()
-    console.log(songTitle);
-    console.log(listVid.find(({ title }) => title === songTitle))
-    playByClick(listVid.find(({ title }) => title === songTitle))
+    // console.log(listVid.find(({ title }) => title === songTitle))
+    if (listVid.find(({ title }) => title === songTitle)) {
+      playByClick(listVid.find(({ title }) => title === songTitle))
+    } else {
+      playByClick(listVidUser.find(({ title }) => title === songTitle))
+    }
   });
   $('.song-duration').on('click', function (e) {
     e.preventDefault();
@@ -726,12 +729,12 @@ function swapDownDOMListVid(clickedPos, clickedList) {
 
 function swapArrayListVid(a, b) {
   if (defaultPlaylist) {
-  var temp = listVid[a];
-  listVid[a] = listVid[b];
-  listVid[b] = temp;
+    var temp = listVid[a];
+    listVid[a] = listVid[b];
+    listVid[b] = temp;
   } else {
     var temp = listVidUser[a];
-    listVidUser[a] = listVid[b];
+    listVidUser[a] = listVidUser[b];
     listVidUser[b] = temp;
   }
 };
@@ -746,6 +749,7 @@ function changePosUp(data) {
 }
 
 function changePosDown(data) {
+  var posVid = posVid + 1
   //get postion of div clicked
   var clickedPos = $(data).parent().parent().parent().index()
   var clickedList = $(data).parent().parent().parent().parent().attr('class')
@@ -760,4 +764,34 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-deleteSong
+function deleteSong(data) {
+  var clickedPos = $(data).parent().parent().parent().index()
+  console.log(clickedPos);
+  var songTitle = $('#song-title').text()
+  //check xem co dang xoa bai dang play khong
+  if ($(data).parent().parent().children().children('h3').text() == songTitle) {
+    // console.log($(data).parent().parent().parent().parent().children());
+    $(data).parent().parent().parent().parent().children().eq(clickedPos + 1).click()
+    $(data).parent().parent().parent().remove()
+    removeSongInList(data)
+  } else {
+    $(data).parent().parent().parent().remove()
+    removeSongInList(data)
+
+  }
+
+  // $(data).parent().parent().parent().remove()
+}
+
+function removeSongInList(data) {
+  if (defaultPlaylist) {
+    var posToRemove = listVid.indexOf(listVid.find(({ title }) => title === $(data).parent().parent().children().children('h3').text()))
+    listVid.splice(posToRemove, 1);
+  } else {
+    var posToRemove = listVidUser.indexOf(listVid.find(({ title }) => title === $(data).parent().parent().children().children('h3').text()))
+    listVidUser.splice(posToRemove, 1);
+  }
+}
+
+//TODO fix lỗi đang play, đổi vị trí thì sau khi skip vẫn là bài đấy
+//TODO Fix posVid
