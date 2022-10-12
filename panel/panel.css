@@ -10,7 +10,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #243342;
+  background-color: #121212;
   color: #fff;
   font-family: "Lato", sans-serif;
 }
@@ -44,7 +44,7 @@ body {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background-color: #151d26;
+  background-color: #000000;
 }
 
 .music-player-container .music-player-content main .music-player-sidebar .category {
@@ -130,7 +130,7 @@ a {
 .music-player-container .music-player-content main .music-player-main {
   width: 60%;
   flex-grow: 1;
-  background-color: #141b23;
+  background-color: #121212;
 }
 
 .music-player-container .music-player-content main .music-player-main .music-player-header {
@@ -149,7 +149,7 @@ a {
 }
 
 .music-player-container .music-player-content main .music-player-main .music-player-header .search-form-container form {
-  background-color: #0a0f13;
+  background-color: #1f1f1f;
   width: 100%;
   height: 44px;
   border-radius: 20px;
@@ -308,7 +308,7 @@ a {
   border-radius: 20px;
   background: #10161c;
   font-weight: bold;
-  color: #151d26;
+  color: #000000;
   cursor: pointer;
 }
 
@@ -398,7 +398,7 @@ a {
 .music-player-container .music-player-content main .music-player-main .current-select-category-container .current-select-category-info .poster-box .back {
   position: relative;
   padding: 15px;
-  background-color: #10161c;
+  background-color: #1f1f1f;
   overflow: hidden;
   transform: rotateY(180deg);
 }
@@ -612,7 +612,7 @@ a {
   height: 80px;
   width: 100%;
   flex-shrink: 0;
-  background-color: #1f2c38;
+  background-color: #181818;
 }
 
 .music-player-container .music-player-content .music-player .current-playing-time {
@@ -1087,4 +1087,10 @@ button {
 .autocomplete-active {
   background-color: DodgerBlue !important;
   color: #ffffff;
+}
+
+.logo {
+  width: 85%;
+  height: auto;
+  padding-bottom: 10%;
 }
