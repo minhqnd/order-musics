@@ -91,7 +91,7 @@ const getPlayListItems = async playlistID => {
   var resultArr = [];
   const result = await axios.get(`https://www.googleapis.com/youtube/v3/playlistItems`, {
     params: {
-      part: 'id,snippet,contentDetails',
+      part: 'snippet',
       maxResults: 50,
       playlistId: playlistID,
       key: apiKey
@@ -103,7 +103,7 @@ const getPlayListItems = async playlistID => {
   while (token) {
     let result = await axios.get(`https://www.googleapis.com/youtube/v3/playlistItems`, {
       params: {
-        part: 'id,snippet,contentDetails',
+        part: 'snippet',
         maxResults: 50,
         playlistId: playlistID,
         key: apiKey,
@@ -124,13 +124,13 @@ const getVideosItems = async ID => {
   var resultArr = [];
   const result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
     params: {
-      part: 'contentDetails',
+      part: 'contentDetails,snippet',
       id: ID,
       key: apiKey
     }
   })
   resultArr.push(result.data);
-  console.log(result)
+  // console.log(result)
   return resultArr;
 };
 
@@ -165,10 +165,12 @@ function showActiveSong() {
   $('.song-name:contains(' + $('#song-title').text() + ')').parent().parent().addClass('active')
 }
 
+
+var listID = []
 // * Get Title, id, artist, duration 
 //! GET DEFAULT PLAYLIST
 var listIndex = -2
-getPlayListItems("PLcWSuvkriTXZk7E0Si1FIbZpCPac7OQhd")
+getPlayListItems("PLcWSuvkriTXaYcO0HyyH9-OFxr-QIH_wA")
   .then(data => {
     data.forEach(item => {
       //xem dang dung list nao
@@ -176,26 +178,25 @@ getPlayListItems("PLcWSuvkriTXZk7E0Si1FIbZpCPac7OQhd")
 
       //* tao list listVid
       //! Moi lan chi nhan dc 50 vid
-      var tempListIndex = 0
       item.items.forEach((i,index) => {
-        if (i.snippet.title !== 'Private video' && 'Deleted video') {
-          listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId, artist: i.snippet.channelTitle })
-          tempListIndex++
-        }
+        // if (i.snippet.title !== 'Private video' && 'Deleted video') {
+          listID.push(i.snippet.resourceId.videoId)
+          // tempListIndex++
+        // }
       });
       var indexOfList = (usingList * 50)
       // console.log(listVid);
-      var list = listVid.slice(listVid.length - tempListIndex).map(a => (a.idVid))
+      var list = listID.slice(indexOfList)
       // console.log(tempListIndex)
-      tempListIndex = 0
 
-      console.log(list);
+      // console.log(list);
       getVideosItems(list.toString()).then(data => {
-        console.log(data)
+        // console.log(data)
         data.forEach(item => {
-          console.log(item.items.length);
+          // console.log(item.items.length);
           item.items.forEach((i, index) => {
-            listVid[index + indexOfList].duration = YTDurationToSeconds(i.contentDetails.duration)
+            listVid.push({ title: i.snippet.title, idVid: i.id, artist: i.snippet.channelTitle, duration : YTDurationToSeconds(i.contentDetails.duration) })
+            // listVid[index + indexOfList].duration = YTDurationToSeconds(i.contentDetails.duration)
             ++listIndex
           })
           
@@ -206,6 +207,7 @@ getPlayListItems("PLcWSuvkriTXZk7E0Si1FIbZpCPac7OQhd")
             listVid.forEach(i => {
               $('.song-list-default').append(renderItem(i.title, i.artist, i.idVid, i.duration))
               setOnClickSong()
+              checkPrivate();
             })
           // }
         })
@@ -216,7 +218,7 @@ getPlayListItems("PLcWSuvkriTXZk7E0Si1FIbZpCPac7OQhd")
 
     posVid = 0
 
-    checkPrivate();
+    
     tag.src = "https://www.youtube.com/iframe_api";
     var firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
@@ -227,6 +229,8 @@ getPlayListItems("PLcWSuvkriTXZk7E0Si1FIbZpCPac7OQhd")
   });
 
 
+
+  //TODO promise fix playlist, van bi get cai nhe hon trc
 var listDuration = []
 
 
@@ -253,7 +257,7 @@ function YTDurationToSeconds(duration) {
 }
 
 function changeAPIKey(newKey, err) {
-  console.log(err.response)
+  console.log(err)
   if (err.response.data.error.errors[0].reason == "dailyLimitExceeded") {
     apiKey = newKey;
     getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
@@ -329,51 +333,54 @@ function getIdVideoBySearch(query) {
 var listVidUser = []
 
 function onYouTubeIframeAPIReady() {
-  player = new YT.Player('player', {
-    height: '0',
-    width: '0',
-    videoId: listVid[posVid].idVid,
-    events: {
-      'onReady': onPlayerReady,
-      'onStateChange': onPlayerStateChange
-    },
-    playerVars: {
-      'autohide': 0,
-      'cc_load_policy': 0,
-      'controls': 1,
-      'disablekb': 1,
-      'iv_load_policy': 3,
-      'modestbranding': 1,
-      'rel': 0,
-      'showinfo': 0,
-      'autoplay': 1,
-      'm': 0
-
-    }
-  });
-
-  $('#song-title').text(listVid[posVid].title);
-  $('#song-artist').text(listVid[posVid].artist)
-  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${listVid[posVid].idVid}/maxresdefault.jpg`);
-  // console.log(listVid[posVid].idVid)
-
-  setInterval(function () {
-    showActiveSong()
-    if (player.getPlayerState() == 0) {
-      nextVideo();
-      playButton(true);
-    }
-    if (!onChangeTime) {
-      var currentTime = (player.getCurrentTime() / player.getDuration()) * 100
-      $('.current-playing-time').val(currentTime * 10)
-      $('.current-playing-time').css('background', 'linear-gradient(to right, #ff2152 0%, #ff2152 ' + currentTime + '%, #fff ' + currentTime + '%, white 100%)');
-    }
-  }, 100);
+  //wait listVid
+  if (listVid.length) {
+    player = new YT.Player('player', {
+      height: '0',
+      width: '0',
+      videoId: listVid[posVid].idVid,
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange
+      },
+      playerVars: {
+        'autohide': 0,
+        'cc_load_policy': 0,
+        'controls': 1,
+        'disablekb': 1,
+        'iv_load_policy': 3,
+        'modestbranding': 1,
+        'rel': 0,
+        'showinfo': 0,
+        'autoplay': 1,
+        'm': 0
+  
+      }
+    });
+  
+    setInterval(function () {
+      showActiveSong()
+      if (player.getPlayerState() == 0) {
+        nextVideo();
+        playButton(true);
+      }
+      if (!onChangeTime) {
+        var currentTime = (player.getCurrentTime() / player.getDuration()) * 100
+        $('.current-playing-time').val(currentTime * 10)
+        $('.current-playing-time').css('background', 'linear-gradient(to right, #ff2152 0%, #ff2152 ' + currentTime + '%, #fff ' + currentTime + '%, white 100%)');
+      }
+    }, 100);
+  } else {
+    setTimeout(onYouTubeIframeAPIReady, 250);
+    // onYouTubeIframeAPIReady()
+  }
 }
 
 function onPlayerReady(event) {
   player.setPlaybackQuality("small");
   $('#song-title').text(listVid[posVid].title);
+  $('#song-artist').text(listVid[posVid].artist)
+  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${listVid[posVid].idVid}/maxresdefault.jpg`);
   playButton(player.getPlayerState() !== 5);
 }
 
