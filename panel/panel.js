@@ -113,40 +113,50 @@ const getPlayListItems = async playlistID => {
     token = result.data.nextPageToken;
     resultArr.push(result.data);
   }
-  console.log(resultArr.items);
+  // console.log(resultArr.items);
   return resultArr;
 };
 
 
 const getVideosItems = async ID => {
-
-
-  
-  var token;
+  // console.log(ID)
+  // async function getVideosItems(ID) {
   var resultArr = [];
   const result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
     params: {
       part: 'contentDetails',
       id: ID,
-      maxResults: 50,
       key: apiKey
     }
   })
   resultArr.push(result.data);
-  while (token) {
-    let result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
-      params: {
-        part: 'contentDetails',
-        id: ID,
-        key: apiKey,
-        pageToken: token
-      }
-    })
-    resultArr.push(result.data);
-  }
+  console.log(result)
   return resultArr;
 };
 
+
+//* using promise
+
+// // const getVideosItems = async ID => {
+//   // console.log(ID)
+// function getVideosItems(ID) {
+//   return new Promise((resolve, reject) => {
+//   var resultArr = [];
+//   const result = axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
+//     params: {
+//       part: 'contentDetails',
+//       id: ID,
+//       key: apiKey
+//     }
+//   })
+//     // resultArr.push(result.data)
+//     console.log(result);
+//     resolve()
+
+//   //   resultArr.push(result.data);
+//   // return resultArr;
+// })
+// }
 
 
 
@@ -155,30 +165,49 @@ function showActiveSong() {
   $('.song-name:contains(' + $('#song-title').text() + ')').parent().parent().addClass('active')
 }
 
-
 // * Get Title, id, artist, duration 
 //! GET DEFAULT PLAYLIST
-getPlayListItems("PLcWSuvkriTXaYcO0HyyH9-OFxr-QIH_wA")
+var listIndex = -2
+getPlayListItems("PLcWSuvkriTXZk7E0Si1FIbZpCPac7OQhd")
   .then(data => {
-    console.log(data);
     data.forEach(item => {
-      
-      item.items.forEach(i => {
-        listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId, artist: i.snippet.channelTitle })
-        
+      //xem dang dung list nao
+      var usingList = data.indexOf(item)
+
+      //* tao list listVid
+      //! Moi lan chi nhan dc 50 vid
+      var tempListIndex = 0
+      item.items.forEach((i,index) => {
+        if (i.snippet.title !== 'Private video' && 'Deleted video') {
+          listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId, artist: i.snippet.channelTitle })
+          tempListIndex++
+        }
       });
-      // console.log(listVid)
-      var list = listVid.map(a => (a.idVid))
+      var indexOfList = (usingList * 50)
+      // console.log(listVid);
+      var list = listVid.slice(listVid.length - tempListIndex).map(a => (a.idVid))
+      // console.log(tempListIndex)
+      tempListIndex = 0
+
+      console.log(list);
       getVideosItems(list.toString()).then(data => {
+        console.log(data)
         data.forEach(item => {
-          console.log(item);
+          console.log(item.items.length);
           item.items.forEach((i, index) => {
-            listVid[index].duration = YTDurationToSeconds(i.contentDetails.duration)
+            listVid[index + indexOfList].duration = YTDurationToSeconds(i.contentDetails.duration)
+            ++listIndex
           })
-        })
-        listVid.forEach(i => {
-          $('.song-list-default').append(renderItem(i.title, i.artist, i.idVid, i.duration))
-          setOnClickSong()
+          
+          //neu da get du duration thi render
+          
+          // if (listIndex == listVid.length) {
+            $('.loading').remove()
+            listVid.forEach(i => {
+              $('.song-list-default').append(renderItem(i.title, i.artist, i.idVid, i.duration))
+              setOnClickSong()
+            })
+          // }
         })
       }).catch(err => {
         console.log(err)
@@ -230,7 +259,9 @@ function changeAPIKey(newKey, err) {
     getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
       .then(data => {
         data.forEach(item => {
-          item.items.forEach(i => listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId }));
+          item.items.forEach(i =>{
+            listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId })
+          });
 
           posVid = 0
           checkPrivate();
