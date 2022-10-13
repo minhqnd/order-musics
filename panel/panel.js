@@ -357,19 +357,6 @@ function onYouTubeIframeAPIReady() {
   
       }
     });
-  
-    setInterval(function () {
-      showActiveSong()
-      if (player.getPlayerState() == 0) {
-        nextVideo();
-        playButton(true);
-      }
-      if (!onChangeTime) {
-        var currentTime = (player.getCurrentTime() / player.getDuration()) * 100
-        $('.current-playing-time').val(currentTime * 10)
-        $('.current-playing-time').css('background', 'linear-gradient(to right, #ff2152 0%, #ff2152 ' + currentTime + '%, #fff ' + currentTime + '%, white 100%)');
-      }
-    }, 100);
   } else {
     setTimeout(onYouTubeIframeAPIReady, 250);
     // onYouTubeIframeAPIReady()
@@ -382,6 +369,19 @@ function onPlayerReady(event) {
   $('#song-artist').text(listVid[posVid].artist)
   $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${listVid[posVid].idVid}/maxresdefault.jpg`);
   playButton(player.getPlayerState() !== 5);
+
+  setInterval(function () {
+    showActiveSong()
+    if (player.getPlayerState() == 0) {
+      nextVideo();
+      playButton(true);
+    }
+    if (!onChangeTime) {
+      var currentTime = (player.getCurrentTime() / player.getDuration()) * 100
+      $('.current-playing-time').val(currentTime * 10)
+      $('.current-playing-time').css('background', 'linear-gradient(to right, #ff2152 0%, #ff2152 ' + currentTime + '%, #fff ' + currentTime + '%, white 100%)');
+    }
+  }, 100);
 }
 
 function playButton(play) {
