@@ -119,46 +119,23 @@ const getPlayListItems = async playlistID => {
 
 
 const getVideosItems = async ID => {
-  // console.log(ID)
-  // async function getVideosItems(ID) {
   var resultArr = [];
-  const result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
-    params: {
-      part: 'contentDetails,snippet',
-      id: ID,
-      key: apiKey
-    }
-  })
-  resultArr.push(result.data);
-  // console.log(result)
+  let a = ID;
+  while (a.length) {
+    let listToReq = a.splice(0, 50)
+    const result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
+      params: {
+        part: 'contentDetails,snippet',
+        id: listToReq.toString(),
+        key: apiKey
+      }
+    })
+    result.data.items.forEach(item =>
+      resultArr.push(item)
+    )
+  }
   return resultArr;
 };
-
-
-//* using promise
-
-// // const getVideosItems = async ID => {
-//   // console.log(ID)
-// function getVideosItems(ID) {
-//   return new Promise((resolve, reject) => {
-//   var resultArr = [];
-//   const result = axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
-//     params: {
-//       part: 'contentDetails',
-//       id: ID,
-//       key: apiKey
-//     }
-//   })
-//     // resultArr.push(result.data)
-//     console.log(result);
-//     resolve()
-
-//   //   resultArr.push(result.data);
-//   // return resultArr;
-// })
-// }
-
-
 
 function showActiveSong() {
   $('.song-list-item').removeClass('active')
@@ -173,65 +150,35 @@ var listIndex = -2
 getPlayListItems("PLcWSuvkriTXaYcO0HyyH9-OFxr-QIH_wA")
   .then(data => {
     data.forEach(item => {
-      //xem dang dung list nao
-      var usingList = data.indexOf(item)
-
-      //* tao list listVid
-      //! Moi lan chi nhan dc 50 vid
-      item.items.forEach((i,index) => {
-        // if (i.snippet.title !== 'Private video' && 'Deleted video') {
-          listID.push(i.snippet.resourceId.videoId)
-          // tempListIndex++
-        // }
-      });
-      var indexOfList = (usingList * 50)
-      // console.log(listVid);
-      var list = listID.slice(indexOfList)
-      // console.log(tempListIndex)
-
-      // console.log(list);
-      getVideosItems(list.toString()).then(data => {
-        // console.log(data)
-        data.forEach(item => {
-          // console.log(item.items.length);
-          item.items.forEach((i, index) => {
-            listVid.push({ title: i.snippet.title, idVid: i.id, artist: i.snippet.channelTitle, duration : YTDurationToSeconds(i.contentDetails.duration) })
-            // listVid[index + indexOfList].duration = YTDurationToSeconds(i.contentDetails.duration)
-            ++listIndex
-          })
-          
-          //neu da get du duration thi render
-          
-          // if (listIndex == listVid.length) {
-            $('.loading').remove()
-            listVid.forEach(i => {
-              $('.song-list-default').append(renderItem(i.title, i.artist, i.idVid, i.duration))
-              setOnClickSong()
-              checkPrivate();
-            })
-          // }
-        })
-      }).catch(err => {
-        console.log(err)
+      item.items.forEach((i) => {
+        listID.push(i.snippet.resourceId.videoId)
       });
     });
-
     posVid = 0
+    getVideosItems(listID).then(data => {
+      data.forEach(i => {
+        listVid.push({ title: i.snippet.title, idVid: i.id, artist: i.snippet.channelTitle, duration: YTDurationToSeconds(i.contentDetails.duration) })
+        if (data.length == listVid.length) {
+          $('.loading').remove()
+          listVid.forEach(i => {
+            $('.song-list-default').append(renderItem(i.title, i.artist, i.idVid, i.duration))
+            setOnClickSong()
+            checkPrivate();
+          })
+        }
+      })
+    }).catch(err => {
+      console.log(err)
+    });
 
-    
     tag.src = "https://www.youtube.com/iframe_api";
     var firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   })
   .catch(err => {
     console.log(err)
-    changeAPIKey(apiKeyList[1], err);
+    // changeAPIKey(apiKeyList[1], err);
   });
-
-
-
-  //TODO promise fix playlist, van bi get cai nhe hon trc
-var listDuration = []
 
 
 //! RAMDOM POSVID
@@ -263,7 +210,7 @@ function changeAPIKey(newKey, err) {
     getPlayListItems("PL7ZciLEZ0K4j9_7OFeuAJIs9LBcoEj_he")
       .then(data => {
         data.forEach(item => {
-          item.items.forEach(i =>{
+          item.items.forEach(i => {
             listVid.push({ title: i.snippet.title, idVid: i.snippet.resourceId.videoId })
           });
 
@@ -354,7 +301,7 @@ function onYouTubeIframeAPIReady() {
         'showinfo': 0,
         'autoplay': 1,
         'm': 0
-  
+
       }
     });
   } else {
@@ -723,6 +670,7 @@ function playByClick(data) {
   $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${data.idVid}/maxresdefault.jpg`);
   showActiveSong()
   setOnClickSong()
+  playButton(true);
 }
 
 //TODO Swap 2 song, var v1 v2 = html, then swap
