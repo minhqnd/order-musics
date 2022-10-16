@@ -137,6 +137,17 @@ const getVideosItems = async ID => {
   return resultArr;
 };
 
+const getVideoItems = async ID => {
+    const result = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
+      params: {
+        part: 'contentDetails,snippet',
+        id: ID,
+        key: apiKey
+      }
+    })
+  return result;
+};
+
 function showActiveSong() {
   $('.song-list-item').removeClass('active')
   $('.song-name:contains(' + $('#song-title').text() + ')').parent().parent().addClass('active')
@@ -314,7 +325,7 @@ function onPlayerReady(event) {
   player.setPlaybackQuality("small");
   $('#song-title').text(listVid[posVid].title);
   $('#song-artist').text(listVid[posVid].artist)
-  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${listVid[posVid].idVid}/maxresdefault.jpg`);
+  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${listVid[posVid].idVid}/mqdefault.jpg`);
   playButton(player.getPlayerState() !== 5);
 
   setInterval(function () {
@@ -388,7 +399,7 @@ function prevSong() {
   var id = listVid[posVid].idVid;
   player.loadVideoById({ videoId: id });
   $('#song-title').text(listVid[posVid].title);
-  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
+  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/mqdefault.jpg`);
   showActiveSong()
   playButton(true);
 }
@@ -410,7 +421,7 @@ function nextSong() {
   var id = listVid[posVid].idVid;
   player.loadVideoById({ videoId: id });
   $('#song-title').text(listVid[posVid].title);
-  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
+  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/mqdefault.jpg`);
   showActiveSong()
   playButton(true);
 
@@ -439,7 +450,7 @@ function nextVideo() {
     var id = listVid[posVid].idVid;
     player.loadVideoById({ videoId: id });
     $('#song-title').text(listVid[posVid].title);
-    $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
+    $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/mqdefault.jpg`);
     showActiveSong()
   }
 
@@ -546,7 +557,6 @@ $('#search').on('input', function (e) {
 });
 
 $('#search').on('click', function (e) {
-  console.log('ccon');
   document.onkeydown = null
 });
 
@@ -596,15 +606,11 @@ function autocomplete(inp, arr) {
   });
 }
 
-
 function addVideoBySearch(id) {
   $('.suggestItem').remove()
   console.log(id)
-  // playMusicById(id)
-  getVideosItems(id).then(data => {
-    data.forEach(item => {
-      console.log(item.items)
-      item.items.forEach((i, index) => {
+  getVideoItems(id).then(data => {
+    data.data.items.forEach((i, index) => {
         var title = i.snippet.title
         var artist = i.snippet.channelTitle
         var duration = YTDurationToSeconds(i.contentDetails.duration)
@@ -613,11 +619,11 @@ function addVideoBySearch(id) {
         $('.song-list-user').append(renderItem(title, artist, id, duration))
         $('#song-title').text(title);
         $('#song-artist').text(artist)
-        $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/maxresdefault.jpg`);
+        $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${id}/mqdefault.jpg`);
         showActiveSong()
         setOnClickSong()
       })
-    })
+    // })
     $('.song-list-default').css('opacity', '0.2');
   }).catch(err => {
     console.log(err)
@@ -667,7 +673,7 @@ function playByClick(data) {
   playMusicById(data.idVid)
   $('#song-title').text(data.title);
   $('#song-artist').text(data.artist)
-  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${data.idVid}/maxresdefault.jpg`);
+  $("#album-cover-image").attr("src", `https://i3.ytimg.com/vi/${data.idVid}/mqdefault.jpg`);
   showActiveSong()
   setOnClickSong()
   playButton(true);
@@ -798,3 +804,6 @@ function removeSongInList(data) {
 }
 
 //TODO Fix posVid
+
+
+//TODO make a function get video
